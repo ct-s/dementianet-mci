@@ -8,6 +8,7 @@ This module is a SCAFFOLD. Fill in the Google Drive folder IDs from the repo
 README, then run. Audio lands in data/raw/ (gitignored) and standardized
 16 kHz mono wavs in data/interim/.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -16,8 +17,8 @@ from dementianet.utils import load_config, resolve
 
 # TODO: paste the Google Drive folder IDs from the DementiaNet README links.
 GDRIVE_FOLDERS = {
-    "dementia": "PASTE_DEMENTIA_FOLDER_ID",
-    "nodementia": "PASTE_NODEMENTIA_FOLDER_ID",
+    "dementia": "1GKlvbU57g80-ofCOXGwatDD4U15tpJ4S",
+    "nodementia": "1jm7w7J8SfuwKHpEALIK6uxR9aQZR1q8I",
 }
 
 
