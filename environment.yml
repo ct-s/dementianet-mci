@@ -1,0 +1,30 @@
+name: dementianet
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  # --- system / audio backend ---
+  - ffmpeg            # decode YouTube-sourced audio (mp3/m4a -> wav)
+  - libsndfile
+  # --- scientific core ---
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - jupyterlab
+  - pyyaml
+  - tqdm
+  # --- audio / speech ---
+  - librosa           # audio loading, resampling, basic features
+  - pip
+  - pip:
+      - opensmile        # eGeMAPS acoustic feature set (jitter, shimmer, HNR, F0...)
+      - openai-whisper   # optional: ASR -> transcripts for linguistic features (stretch goal)
+      - praat-parselmouth # pause / voicing analysis via Praat
+      - shap             # model interpretability
+      - gdown            # download the DementiaNet clips from Google Drive
+      - pytest           # tests
+      - pre-commit       # code-quality hooks
+      - ruff             # linter + formatter

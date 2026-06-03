@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dementianet"
+version = "0.1.0"
+description = "Speech-based early detection of cognitive decline on the DementiaNet corpus"
+authors = [{ name = "Constantin Sorge" }]
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B"]  # errors, pyflakes, import-sort, warnings, bugbear
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

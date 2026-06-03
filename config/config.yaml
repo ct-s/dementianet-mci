@@ -1,0 +1,40 @@
+# Central configuration for the DementiaNet mini-project.
+# Keep all paths, hyperparameters, and constants here — never hard-code in scripts.
+
+seed: 42
+
+paths:
+  data_raw: data/raw            # original downloaded audio (gitignored)
+  data_interim: data/interim    # standardized wavs (16 kHz mono)
+  data_processed: data/processed  # feature tables (CSV/parquet)
+  metadata: data/external/dementianet_metadata.csv  # from the project's Google Sheet
+  results_figures: results/figures
+  results_tables: results/tables
+
+audio:
+  target_sample_rate: 16000     # Hz; standardize everything to this
+  mono: true
+  clip_min_seconds: 5           # discard clips shorter than this
+
+features:
+  opensmile_feature_set: eGeMAPSv02   # jitter, shimmer, HNR, F0, loudness...
+  opensmile_feature_level: Functionals
+  pause:
+    min_pause_ms: 180           # short/long pause boundary (He et al. 2025)
+    silence_threshold_db: -35   # below this = silence
+
+# Time-before-diagnosis buckets for the longitudinal analysis (dementia group)
+time_buckets:
+  - post_diagnosis
+  - 0_5_years
+  - 5_10_years
+  - 10_15_years
+
+model:
+  test_size: 0.25
+  cv_folds: 5
+  group_column: speaker_id      # speaker-independent splits (avoid leakage)
+  classifiers:
+    - logistic_regression
+    - svm_rbf
+    - gradient_boosting
