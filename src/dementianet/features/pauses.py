@@ -31,7 +31,7 @@ def pause_features(wav_path: Path, min_pause_ms: int, silence_db: float) -> dict
 
     # Silence gaps = spaces between voiced intervals.
     gaps_s = []
-    for (s0, e0), (s1, _e1) in zip(intervals[:-1], intervals[1:]):
+    for (_s0, e0), (s1, _e1) in zip(intervals[:-1], intervals[1:], strict=False):
         gaps_s.append((s1 - e0) / sr)
     gaps_s = np.array(gaps_s)
 

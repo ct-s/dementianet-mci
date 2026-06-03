@@ -7,8 +7,6 @@ project -- handle it correctly and document it.
 """
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
