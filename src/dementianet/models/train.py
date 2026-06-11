@@ -29,7 +29,7 @@ from dementianet.utils import load_config, resolve, set_seed
 
 CLASSIFIERS = {
     "logistic_regression": LogisticRegression(max_iter=1000),
-    "svm_rbf": SVC(kernel="rbf", probability=True),
+    "svm_rbf": SVC(kernel="rbf"),  # roc_auc uses decision_function; no probability needed
     "gradient_boosting": GradientBoostingClassifier(),
 }
 
