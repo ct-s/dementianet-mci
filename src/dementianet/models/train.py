@@ -4,7 +4,17 @@ CRITICAL: split by speaker (GroupKFold), never by clip. DementiaNet has
 multiple clips per individual; a random split would leak a speaker across
 train/test and inflate accuracy. This is the main methodological trap in the
 project -- handle it correctly and document it.
+
+Data flow:
+  data/processed/manifest.csv        (clip_path, speaker_id, label, dx)
+  data/processed/pause_features.csv  (clip_path, pause features)
+  data/processed/acoustic_egemaps.csv (optional; enable via model.use_acoustic)
+
+The dementia group is filtered to the AD-enriched phenotype (Alzheimer +
+unspecified Dementia) via dataset.include_dx in config.yaml. The positive class
+is dataset.positive_dx; controls are the negative class.
 """
+
 from __future__ import annotations
 
 import pandas as pd
@@ -23,21 +33,43 @@ CLASSIFIERS = {
     "gradient_boosting": GradientBoostingClassifier(),
 }
 
+# Columns that are identifiers/labels, never model inputs.
+NON_FEATURE_COLS = {"clip_path", "speaker_id", "label", "dx", "time_bucket", "valid"}
+
 
 def load_feature_table() -> pd.DataFrame:
-    """Merge feature CSVs with metadata (label, speaker_id, time bucket).
+    """Load manifest + features, apply the AD inclusion filter, add a binary target.
 
-    Expects:
-      data/processed/pause_features.csv
-      data/processed/acoustic_egemaps.csv
-      data/external/dementianet_metadata.csv  (clip_path, speaker_id, label, time_bucket)
+    Returns a dataframe with feature columns plus: speaker_id, dx, and `y`
+    (1 = dementia/AD-enriched, 0 = control).
     """
     cfg = load_config()
     proc = resolve(cfg["paths"]["data_processed"])
-    meta = pd.read_csv(resolve(cfg["paths"]["metadata"]))
+
+    manifest = pd.read_csv(resolve(cfg["dataset"]["manifest"]))
+    if "dx" not in manifest.columns:
+        raise KeyError(
+            "manifest.csv has no 'dx' column. Enrich it with diagnosis first "
+            "(see the join snippet in the project notes)."
+        )
+
     pauses = pd.read_csv(proc / "pause_features.csv")
-    acoustic = pd.read_csv(proc / "acoustic_egemaps.csv")
-    df = meta.merge(pauses, on="clip_path").merge(acoustic, on="clip_path")
+    df = manifest.merge(pauses, on="clip_path", how="inner")
+
+    if cfg["model"].get("use_acoustic", False):
+        acoustic = pd.read_csv(proc / "acoustic_egemaps.csv")
+        df = df.merge(acoustic, on="clip_path", how="inner")
+
+    # Inclusion filter (decided a priori) + binary target.
+    include = set(cfg["dataset"]["include_dx"])
+    positive = set(cfg["dataset"]["positive_dx"])
+    df = df[df["dx"].isin(include)].copy()
+    df["y"] = df["dx"].isin(positive).astype(int)
+
+    # Drop clips whose features failed (e.g. silent/too-short).
+    if "valid" in df.columns:
+        df = df[df["valid"] != False]  # noqa: E712  (keep NaN/True, drop explicit False)
+
     return df
 
 
@@ -47,10 +79,17 @@ def evaluate(df: pd.DataFrame) -> pd.DataFrame:
     group_col = cfg["model"]["group_column"]
     folds = cfg["model"]["cv_folds"]
 
-    drop = {"clip_path", "label", group_col, "time_bucket", "valid"}
-    X = df.drop(columns=[c for c in drop if c in df.columns]).select_dtypes("number")
-    y = df["label"]
+    X = df.drop(columns=[c for c in NON_FEATURE_COLS if c in df.columns])
+    X = X.select_dtypes("number").drop(columns=["y"], errors="ignore")
+    X = X.fillna(X.median(numeric_only=True))
+    y = df["y"]
     groups = df[group_col]
+
+    n_pos, n_neg, n_spk = int(y.sum()), int((1 - y).sum()), groups.nunique()
+    print(
+        f"[data] {len(df)} clips | {n_pos} dementia / {n_neg} control "
+        f"| {n_spk} speakers | {X.shape[1]} features"
+    )
 
     cv = GroupKFold(n_splits=folds)
     results = []
