@@ -43,6 +43,11 @@ model:
   cv_folds: 5
   group_column: speaker_id      # speaker-independent splits (avoid leakage)
   use_acoustic: true           # set true once acoustic_egemaps.csv exists
+  # Features excluded from the model (kept in CSVs for confound analysis).
+  # duration_s: clip length is a data-collection artifact (how the YouTube clip
+  #   was trimmed), not a speaker property -> must not be a predictor.
+  # raw counts: superseded by the duration-normalized *_rate features.
+  exclude_features: [duration_s, n_pauses, n_long_pauses, n_short_pauses]
   classifiers:
     - logistic_regression
     - svm_rbf

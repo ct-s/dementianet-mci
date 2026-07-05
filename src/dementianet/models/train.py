@@ -84,8 +84,10 @@ def split_features(df: pd.DataFrame):
     """
     cfg = load_config()
     group_col = cfg["model"]["group_column"]
+    exclude = set(cfg["model"].get("exclude_features", []))
     X = df.drop(columns=[c for c in NON_FEATURE_COLS if c in df.columns])
     X = X.select_dtypes("number").drop(columns=["y"], errors="ignore")
+    X = X.drop(columns=[c for c in exclude if c in X.columns])  # confound/artifact features
     X = X.fillna(X.median(numeric_only=True))
     return X, df["y"], df[group_col]
 
