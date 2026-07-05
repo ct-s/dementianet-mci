@@ -8,6 +8,7 @@ Implements the pause markers highlighted in the report:
 These are extracted from the audio envelope; no transcript required, which
 suits the noisy YouTube-sourced DementiaNet clips.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -41,14 +42,21 @@ def pause_features(wav_path: Path, min_pause_ms: int, silence_db: float) -> dict
     long_pauses = gaps_s[gaps_s >= min_pause_s]
     short_pauses = gaps_s[gaps_s < min_pause_s]
 
+    dur = duration_s if duration_s else np.nan
     return {
         "clip_path": str(wav_path.name),
         "valid": True,
         "duration_s": duration_s,
-        "psd": silence_s / duration_s if duration_s else np.nan,  # % silence duration
+        "psd": silence_s / dur,  # % silence duration
+        # Raw counts (duration-confounded; kept for reference).
         "n_pauses": len(gaps_s),
         "n_long_pauses": int(len(long_pauses)),
         "n_short_pauses": int(len(short_pauses)),
+        # Per-second rates (duration-normalized; use these to separate
+        # "pauses because impaired" from "pauses because the clip is long").
+        "pause_rate": len(gaps_s) / dur,
+        "long_pause_rate": len(long_pauses) / dur,
+        "short_pause_rate": len(short_pauses) / dur,
         "mean_pause_s": float(np.mean(gaps_s)) if len(gaps_s) else 0.0,
         "std_pause_s": float(np.std(gaps_s)) if len(gaps_s) else 0.0,
         "long_pause_ratio": len(long_pauses) / len(gaps_s) if len(gaps_s) else 0.0,
