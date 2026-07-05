@@ -4,6 +4,7 @@ eGeMAPS gives ~88 functionals including jitter, shimmer, HNR, F0 statistics,
 loudness, and spectral measures -- the voice-quality markers linked to AD in
 the report (locus coeruleus / arousal axis: jitter & shimmer).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,7 +29,7 @@ def extract_egemaps(interim_dir: Path | None = None) -> pd.DataFrame:
     rows = []
     for wav in sorted(Path(interim).rglob("*.wav")):
         feats = smile.process_file(str(wav))
-        feats.insert(0, "clip_path", str(wav.relative_to(interim)))
+        feats.insert(0, "clip_path", wav.name)  # basename, to match manifest & pause_features
         rows.append(feats.reset_index(drop=True))
 
     if not rows:

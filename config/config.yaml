@@ -36,12 +36,13 @@ dataset:
   # Parkinson, and PPA due to distinct motor/aphasic speech phenotypes (report 8.1).
   include_dx: [Alzheimer, Dementia, control]
   positive_dx: [Alzheimer, Dementia]   # these form the positive (dementia) class; control = negative
+  test_size: 0.25       # fraction of SPEAKERS held out as the locked test set
+  split_seed: 42        # fixed so the dev/test split never drifts
 
 model:
-  test_size: 0.25
   cv_folds: 5
   group_column: speaker_id      # speaker-independent splits (avoid leakage)
-  use_acoustic: false           # set true once acoustic_egemaps.csv exists
+  use_acoustic: true           # set true once acoustic_egemaps.csv exists
   classifiers:
     - logistic_regression
     - svm_rbf
