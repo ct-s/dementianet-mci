@@ -10,6 +10,9 @@ paths:
   metadata: data/external/dementianet_metadata.csv  # from the project's Google Sheet
   results_figures: results/figures
   results_tables: results/tables
+  praat_dir: praat                       # downloaded uhm-o-meter scripts (gitignored)
+  syllable_nuclei_script: praat/syllablenuclei_v3.praat   # orchestrator; calls FilledPauses.praat
+  filled_pauses_script: praat/filledpauses.praat    # stage-2 detector (called by v3)
 
 audio:
   target_sample_rate: 16000     # Hz; standardize everything to this
@@ -22,6 +25,12 @@ features:
   pause:
     min_pause_ms: 180           # short/long pause boundary (He et al. 2025)
     silence_threshold_db: -35   # below this = silence
+  filled_pauses:                # Syllable Nuclei v3 + FilledPauses (De Jong et al. 2019)
+    language: English           # English or Dutch (script is tuned per language)
+    threshold: 1.0              # filled-pause cut-off; higher -> fewer false positives
+    silence_threshold_db: -25   # v3 syllable-nuclei silence threshold
+    min_dip_db: 2               # v3 minimum dip between intensity peaks
+    min_pause_s: 0.3            # v3 minimum silent-pause duration
 
 # Time-before-diagnosis buckets for the longitudinal analysis (dementia group)
 time_buckets:
@@ -43,6 +52,7 @@ model:
   cv_folds: 5
   group_column: speaker_id      # speaker-independent splits (avoid leakage)
   use_acoustic: true           # set true once acoustic_egemaps.csv exists
+  use_filled_pauses: false    # ablation showed no added signal on this corpus (see report)
   # Features excluded from the model (kept in CSVs for confound analysis).
   # duration_s: clip length is a data-collection artifact (how the YouTube clip
   #   was trimmed), not a speaker property -> must not be a predictor.

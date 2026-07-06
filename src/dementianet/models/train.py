@@ -60,6 +60,10 @@ def load_feature_table() -> pd.DataFrame:
         acoustic = pd.read_csv(proc / "acoustic_egemaps.csv")
         df = df.merge(acoustic, on="clip_path", how="inner")
 
+    if cfg["model"].get("use_filled_pauses", False):
+        filled = pd.read_csv(proc / "filled_pause_features.csv")
+        df = df.merge(filled, on="clip_path", how="inner")
+
     # Inclusion filter (decided a priori) + binary target.
     include = set(cfg["dataset"]["include_dx"])
     positive = set(cfg["dataset"]["positive_dx"])

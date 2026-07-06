@@ -25,6 +25,12 @@ DURATION = ["duration_s"]
 COUNTS = ["n_pauses", "n_long_pauses", "n_short_pauses"]
 RATES = ["pause_rate", "long_pause_rate", "short_pause_rate"]
 PAUSE_OTHER = ["psd", "mean_pause_s", "std_pause_s", "long_pause_ratio", "articulation_rate"]
+FILLED = [
+    "n_filled_pauses",
+    "filled_pause_rate",
+    "filled_to_silent_ratio",
+    "filled_pause_time_ratio",
+]
 
 
 def all_feature_cols(df) -> list[str]:
@@ -55,22 +61,22 @@ def main():
     df = load_feature_table()
     df = df[df["split"] == "dev"]
 
-    known = set(DURATION + COUNTS + RATES + PAUSE_OTHER)
+    known = set(DURATION + COUNTS + RATES + PAUSE_OTHER + FILLED)
     acoustic = [c for c in all_feature_cols(df) if c not in known]
+    clean_pause = RATES + PAUSE_OTHER  # duration-free, non-redundant pause block
 
     configs = {
-        "ALL (duration+counts+rates+pauseOther+acoustic)": DURATION
-        + COUNTS
-        + RATES
-        + PAUSE_OTHER
-        + acoustic,
-        "drop duration only": COUNTS + RATES + PAUSE_OTHER + acoustic,
-        "drop counts only": DURATION + RATES + PAUSE_OTHER + acoustic,
-        "drop duration+counts (current baseline)": RATES + PAUSE_OTHER + acoustic,
-        "clean pause (rates+pauseOther) + acoustic": RATES + PAUSE_OTHER + acoustic,
-        "pause features only (no acoustic)": DURATION + COUNTS + RATES + PAUSE_OTHER,
+        "clean pause + acoustic (baseline)": clean_pause + acoustic,
         "acoustic only (no pause)": acoustic,
+        "pause only (no acoustic)": clean_pause,
+        # Filled-pause block: does it add signal over the baseline?
+        "+ filled pauses (full)": clean_pause + acoustic + FILLED,
+        "clean pause + filled (no acoustic)": clean_pause + FILLED,
+        "filled pauses only": FILLED,
     }
+    # Keep only configs whose features exist (filled pauses are optional).
+    configs = {n: [c for c in cols if c in df.columns] for n, cols in configs.items()}
+    configs = {n: cols for n, cols in configs.items() if cols}
 
     rows = []
     for name, cols in configs.items():
