@@ -32,12 +32,21 @@ from sklearn.model_selection import GroupKFold, cross_val_predict
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+from dementianet.models.ablation import FILLED, PAUSE_OTHER, RATES
 from dementianet.models.train import load_feature_table, split_features
 from dementianet.utils import load_config, resolve, set_seed
 
 _BIN = re.compile(r"_(0|5|10|15)(?:_\d+)?$")
 _LABEL = {0: "post", 5: "0-5yr", 10: "5-10yr", 15: "10-15yr"}
 _ORDER = ["post", "0-5yr", "5-10yr", "10-15yr"]
+
+
+def _oof_proba(X, y, groups, folds):
+    """Speaker-grouped out-of-fold P(dementia) for a given feature matrix."""
+    clf = make_pipeline(StandardScaler(), GradientBoostingClassifier(random_state=42))
+    return cross_val_predict(
+        clf, X, y, groups=groups, cv=GroupKFold(folds), method="predict_proba"
+    )[:, 1]
 
 
 def add_time_bin(df: pd.DataFrame) -> pd.DataFrame:
@@ -54,6 +63,61 @@ def add_time_bin(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def family_gradient(dev, X, y, groups, folds, figs, tabs):
+    """Exploratory: per-time-bin AUC for each feature family separately.
+
+    Shows whether the signal source shifts over time (voice quality vs pause
+    timing). NOTE: per-bin n is small (~17-26), so read gross patterns only.
+    """
+    pause_set = set(RATES + PAUSE_OTHER)
+    families = {
+        "acoustic": [c for c in X.columns if c not in set(RATES + PAUSE_OTHER + FILLED)],
+        "pause": [c for c in X.columns if c in pause_set],
+        "pause+acoustic": list(X.columns),
+    }
+
+    long = []
+    for fam, cols in families.items():
+        if not cols:
+            continue
+        d = dev.assign(_p=_oof_proba(X[cols], y, groups, folds))
+        ctrl = d[d["dx"] == "control"]
+        for b in _ORDER:
+            sub = d[d["time_bin"] == b]
+            if len(sub) < 3:
+                continue
+            yy = [1] * len(sub) + [0] * len(ctrl)
+            pp = list(sub["_p"]) + list(ctrl["_p"])
+            long.append(
+                {
+                    "family": fam,
+                    "time_bin": b,
+                    "n": len(sub),
+                    "auc": round(roc_auc_score(yy, pp), 3),
+                }
+            )
+
+    res = pd.DataFrame(long)
+    res.to_csv(tabs / "longitudinal_by_family.csv", index=False)
+    print("\n[per-family AUC by time bin (exploratory, small n)]")
+    print(res.pivot(index="time_bin", columns="family", values="auc").reindex(_ORDER).to_string())
+
+    plt.figure(figsize=(6, 4))
+    for fam in families:
+        g = res[res["family"] == fam]
+        if len(g):
+            plt.plot(g["time_bin"], g["auc"], "o-", label=fam)
+    plt.axhline(0.5, ls="--", c="grey", lw=1)
+    plt.ylim(0.4, 1.0)
+    plt.ylabel("AUC vs controls")
+    plt.xlabel("time before diagnosis")
+    plt.title("Signal source over time (exploratory, small n)")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(figs / "longitudinal_by_family.png", dpi=150)
+    plt.close()
+
+
 def main():
     cfg = load_config()
     set_seed(cfg["seed"])
@@ -64,10 +128,7 @@ def main():
     X, y, groups = split_features(dev)
 
     # Out-of-fold probabilities (speaker-grouped) -> no leakage.
-    clf = make_pipeline(StandardScaler(), GradientBoostingClassifier(random_state=42))
-    dev["proba"] = cross_val_predict(
-        clf, X, y, groups=groups, cv=GroupKFold(folds), method="predict_proba"
-    )[:, 1]
+    dev["proba"] = _oof_proba(X, y, groups, folds)
 
     controls = dev[dev["dx"] == "control"]
     print(f"[data] dev: {len(dev)} clips | {len(controls)} controls")
@@ -130,6 +191,9 @@ def main():
     plt.savefig(figs / "longitudinal_auc.png", dpi=150)
     plt.close()
     print(f"\n[longitudinal] wrote {tabs/'longitudinal_auc.csv'} and {figs/'longitudinal_auc.png'}")
+
+    # Exploratory: how each feature family's signal changes across the timeline.
+    family_gradient(dev, X, y, groups, folds, figs, tabs)
 
 
 if __name__ == "__main__":
