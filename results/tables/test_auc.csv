@@ -1,0 +1,4 @@
+model,test_auc
+logistic_regression,0.6101190476190477
+svm_rbf,0.6166666666666667
+gradient_boosting,0.4172619047619048

@@ -10,10 +10,7 @@ praat/*
 !praat/README.md
 *.auto.TextGrid
 
-# ---- Results: keep dir, ignore generated artifacts ----
-results/figures/*
-results/tables/*
-!results/**/.gitkeep
+# ---- Results: publish figures (PNG) and tables (CSV); raw media stays ignored ----
 *.wav
 *.mp3
 *.m4a

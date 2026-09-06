@@ -1,0 +1,13 @@
+family,time_bin,n,auc
+acoustic,post,17,0.557
+acoustic,0-5yr,26,0.574
+acoustic,5-10yr,23,0.573
+acoustic,10-15yr,19,0.404
+pause,post,17,0.421
+pause,0-5yr,26,0.529
+pause,5-10yr,23,0.448
+pause,10-15yr,19,0.432
+pause+acoustic,post,17,0.544
+pause+acoustic,0-5yr,26,0.577
+pause+acoustic,5-10yr,23,0.596
+pause+acoustic,10-15yr,19,0.405

@@ -1,0 +1,8 @@
+time_bin,n_dementia,auc_vs_control
+post,17,0.544
+0-5yr,26,0.577
+5-10yr,23,0.596
+10-15yr,19,0.405
+NEAR (post+0-5yr),43,0.564
+FAR (5-10+10-15yr),42,0.51
+ALL dementia,85,0.537
