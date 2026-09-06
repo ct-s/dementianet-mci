@@ -56,19 +56,5 @@ Then run the pipeline:
 bash scripts/run_pipeline.sh
 ```
 
-## The methodological trap (read before modelling)
-DementiaNet has multiple clips per person. **Always split by `speaker_id`
-(GroupKFold), never by clip** — a random split leaks a speaker across
-train/test and inflates accuracy. The dementia and control clips also differ in
-recording era and audio quality, so run the **confound audit** in
-`notebooks/01_exploration.md` and report it honestly. Target ~70%+ AUC (the
-DementiaNet authors' own benchmark), not the inflated >0.95 seen on clean corpora.
-
-## Roadmap
-- [ ] Week 1: env + data download + EDA + confound audit
-- [ ] Week 2: pause + acoustic feature extraction; baseline classifier
-- [ ] Week 3: longitudinal analysis (signal vs time-before-diagnosis); interpretability (SHAP)
-- [ ] Week 4: write-up, limitations, reproducibility check
-
 ## License
 Code: MIT (see `LICENSE`). Data: governed by DementiaNet's terms — research use only.
