@@ -78,7 +78,17 @@ Speech is not the diagnosis. It is the funnel that makes early diagnosis afforda
  any phone
 ```
 
-**Interactive product prototype:** shipping with this submission at `https://ct-s.github.io/dementianet-voicescreen/`
+## Product prototype
+
+A clickable concept of the tier 0 voice check, built as a single static page with illustrative data. Record or upload about 60 seconds of speech, watch the analysis steps, and receive a plain language risk tier with a referral to a plasma p-Tau217 blood test. Designed to be usable by people over 70: large type, one column, one decision per screen.
+
+**Try it:** [ct-s.github.io/dementianet-voicescreen](https://ct-s.github.io/dementianet-voicescreen/)
+
+<div align="center">
+<img src="docs/screenshot-start.png" width="380" alt="Start screen of the voice check prototype">&nbsp;&nbsp;
+<img src="docs/screenshot-result.png" width="380" alt="Result screen showing a moderate tier and a blood test recommendation"><br>
+<sub>Concept prototype, not a medical device. Results shown are illustrative; the page does not run a model.</sub>
+</div>
 
 ## How it works
 
