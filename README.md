@@ -147,10 +147,5 @@ We would rather tell you what is not proven than have you find out later:
 ---
 
 <div align="center">
-<sub>
-
-Built with Python, scikit-learn, openSMILE, and Praat. Data: [DementiaNet](https://github.com/shreyasgite/dementianet), with de Jong et al. for the Praat fluency scripts. MIT licensed.<br>
-A research proof of concept. Not a medical device.
-
-</sub>
+<sub>Built with Python, scikit-learn, openSMILE, and Praat. Data: <a href="https://github.com/shreyasgite/dementianet">DementiaNet</a> (de Jong et al. for the Praat fluency scripts). MIT licensed.<br>A research proof of concept. Not a medical device.</sub>
 </div>
