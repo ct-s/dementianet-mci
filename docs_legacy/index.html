@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DementiaNet VoiceScreen</title>
+<meta name="description" content="Concept prototype of a 60 second voice check that pre-screens for Alzheimer's risk. Not a medical device.">
+<style>
+  :root {
+    --bg: #f4f6f7;
+    --card: #ffffff;
+    --text: #1f2933;
+    --muted: #5b6770;
+    --line: #dde3e7;
+    --accent: #2b6777;
+    --accent-dark: #1f4f5c;
+    --accent-soft: #e6f0f2;
+    --low: #2f7d4f;
+    --low-soft: #e7f3ec;
+    --mid: #a8701a;
+    --mid-soft: #fbf1df;
+    --high: #b0473c;
+    --high-soft: #f9e8e6;
+    --focus: #1a73e8;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 19px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* Header */
+  header { padding: 28px 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+  .brand .mark {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--accent);
+    display: grid; place-items: center; flex: none;
+  }
+  .brand .mark svg { width: 24px; height: 24px; }
+  .brand strong { font-size: 1.15rem; letter-spacing: -0.01em; }
+  .pill {
+    font-size: 0.8rem; color: var(--muted); border: 1px solid var(--line); background: var(--card);
+    padding: 5px 12px; border-radius: 999px; white-space: nowrap;
+  }
+
+  /* Steps */
+  .steps { display: flex; gap: 8px; margin: 22px 0 18px; padding: 0; list-style: none; }
+  .steps li {
+    flex: 1; display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; background: var(--card); border: 1px solid var(--line);
+    color: var(--muted); font-size: 0.9rem;
+  }
+  .steps li .n {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--line); color: var(--text); font-weight: 600; flex: none; font-size: 0.85rem;
+  }
+  .steps li.active { border-color: var(--accent); color: var(--text); }
+  .steps li.active .n { background: var(--accent); color: #fff; }
+  .steps li.done .n { background: var(--low); color: #fff; }
+  @media (max-width: 520px) { .steps li span.label { display: none; } .steps li { justify-content: center; } }
+
+  /* Cards */
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 30px 28px; box-shadow: 0 1px 2px rgba(20, 30, 40, 0.04);
+  }
+  @media (max-width: 520px) { .card { padding: 24px 18px; } }
+  h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 12px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.3rem; line-height: 1.3; margin: 0 0 10px; }
+  h3 { font-size: 1.05rem; margin: 0 0 6px; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 1.1rem; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.9rem; }
+  ul.plain { padding-left: 1.2em; margin: 0 0 16px; }
+  ul.plain li { margin-bottom: 6px; }
+
+  /* Buttons */
+  .btn {
+    appearance: none; border: 2px solid var(--accent); background: var(--accent); color: #fff;
+    font: inherit; font-weight: 600; font-size: 1.05rem; min-height: 60px; padding: 12px 24px;
+    border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    gap: 12px; width: 100%; text-decoration: none; transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+  .btn.secondary { background: var(--card); color: var(--accent); }
+  .btn.secondary:hover { background: var(--accent-soft); }
+  .btn.quiet {
+    background: transparent; border-color: transparent; color: var(--accent); min-height: 48px;
+    font-weight: 500; text-decoration: underline; text-underline-offset: 4px;
+  }
+  .btn.quiet:hover { background: var(--accent-soft); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .btn svg { width: 24px; height: 24px; flex: none; }
+  .btn-row { display: grid; gap: 12px; margin-top: 20px; }
+  @media (min-width: 560px) { .btn-row.two { grid-template-columns: 1fr 1fr; } }
+
+  /* Recording */
+  .prompt-box {
+    background: var(--accent-soft); border-radius: 12px; padding: 18px 20px; margin: 4px 0 22px;
+  }
+  .prompt-box strong { display: block; margin-bottom: 4px; }
+  .rec-area { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 8px 0 6px; }
+  .ring { position: relative; width: 168px; height: 168px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 10; }
+  .ring .track { stroke: var(--line); }
+  .ring .prog { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 0.9s linear; }
+  .ring .time {
+    position: absolute; inset: 0; display: grid; place-items: center; font-size: 2rem;
+    font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  .ring .time small { display: block; font-size: 0.75rem; font-weight: 500; color: var(--muted); text-align: center; }
+  .wave { display: flex; align-items: center; gap: 4px; height: 56px; }
+  .wave i {
+    display: block; width: 6px; height: 8px; border-radius: 3px; background: var(--accent);
+    transition: height 0.12s;
+  }
+  .rec-dot {
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--high);
+    margin-right: 8px; vertical-align: -1px; animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.25; } }
+  .notice {
+    border-left: 4px solid var(--mid); background: var(--mid-soft); padding: 12px 16px; border-radius: 8px;
+    font-size: 0.95rem; margin: 0 0 16px;
+  }
+
+  /* Analyzing */
+  .stages { list-style: none; padding: 0; margin: 20px 0 8px; }
+  .stages li {
+    display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .stages li:first-child { border-top: 0; }
+  .stages li .ic {
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--line); flex: none;
+    display: grid; place-items: center;
+  }
+  .stages li.running { color: var(--text); }
+  .stages li.running .ic { border-color: var(--accent); border-top-color: transparent; animation: spin 0.9s linear infinite; }
+  .stages li.done { color: var(--text); }
+  .stages li.done .ic { background: var(--low); border-color: var(--low); }
+  .stages li.done .ic svg { width: 18px; height: 18px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Result */
+  .tier {
+    border-radius: 12px; padding: 22px 24px; margin: 6px 0 22px; border: 1px solid transparent;
+  }
+  .tier.low { background: var(--low-soft); border-color: #cfe5d8; }
+  .tier.mid { background: var(--mid-soft); border-color: #f0dfb8; }
+  .tier.high { background: var(--high-soft); border-color: #efc9c4; }
+  .tier .kicker { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+  .tier h2 { font-size: 1.55rem; margin-bottom: 8px; }
+  .tier.low h2 { color: var(--low); }
+  .tier.mid h2 { color: var(--mid); }
+  .tier.high h2 { color: var(--high); }
+  .scale { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 16px 0 6px; }
+  .scale div {
+    height: 12px; border-radius: 6px; background: var(--line); position: relative;
+  }
+  .scale div.on.low { background: var(--low); }
+  .scale div.on.mid { background: var(--mid); }
+  .scale div.on.high { background: var(--high); }
+  .scale-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 0.8rem; color: var(--muted); }
+  .scale-labels span:nth-child(2) { text-align: center; }
+  .scale-labels span:nth-child(3) { text-align: right; }
+
+  .indicators { list-style: none; padding: 0; margin: 6px 0 20px; }
+  .indicators li { padding: 14px 0; border-top: 1px solid var(--line); }
+  .indicators li:first-child { border-top: 0; }
+  .ind-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .ind-head strong { font-size: 1rem; }
+  .ind-head .tag { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+  .tag.ok { color: var(--low); }
+  .tag.warn { color: var(--mid); }
+  .tag.bad { color: var(--high); }
+  .bar { height: 10px; border-radius: 5px; background: var(--line); margin: 10px 0 8px; position: relative; overflow: hidden; }
+  .bar .range { position: absolute; top: 0; bottom: 0; left: 15%; right: 15%; background: #c9d6dc; border-radius: 5px; }
+  .bar .dot {
+    position: absolute; top: -3px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent);
+    border: 3px solid #fff; box-shadow: 0 0 0 1px var(--accent); transform: translateX(-50%);
+  }
+  .ind-note { font-size: 0.92rem; color: var(--muted); margin: 0; }
+
+  .recommend {
+    border: 2px solid var(--accent); border-radius: 12px; padding: 18px 20px; margin: 6px 0 20px;
+  }
+  .recommend h3 { color: var(--accent-dark); }
+  .recommend p:last-child { margin-bottom: 0; }
+
+  .demo {
+    margin-top: 26px; padding-top: 18px; border-top: 1px dashed var(--line); font-size: 0.9rem; color: var(--muted);
+  }
+  .demo .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip {
+    font: inherit; font-size: 0.9rem; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); cursor: pointer; min-height: 40px;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; }
+
+  /* Funnel */
+  section.about { margin-top: 34px; }
+  .funnel { display: grid; gap: 10px; margin: 14px 0 10px; }
+  @media (min-width: 640px) { .funnel { grid-template-columns: repeat(4, 1fr); } }
+  .funnel .stage {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px; position: relative;
+  }
+  .funnel .stage.first { border-color: var(--accent); background: var(--accent-soft); }
+  .funnel .stage .k { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .funnel .stage strong { display: block; font-size: 1rem; margin: 2px 0 4px; }
+  .funnel .stage span { font-size: 0.88rem; color: var(--muted); }
+  .facts { display: grid; gap: 10px; margin-top: 14px; }
+  @media (min-width: 560px) { .facts { grid-template-columns: 1fr 1fr 1fr; } }
+  .fact { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .fact b { display: block; font-size: 1.4rem; color: var(--accent-dark); line-height: 1.2; }
+  .fact span { font-size: 0.88rem; color: var(--muted); }
+
+  footer { margin-top: 36px; font-size: 0.88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+  .hidden { display: none !important; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  @media print {
+    body { background: #fff; }
+    header, .steps, .btn-row, .demo, section.about { display: none !important; }
+    .card { border: 0; box-shadow: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <a class="brand" href="#" id="brand">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+          <path d="M4 12h2M8 7v10M12 4v16M16 8v8M20 11v2"/>
+        </svg>
+      </span>
+      <strong>DementiaNet VoiceScreen</strong>
+    </a>
+    <span class="pill">Concept prototype. Not a medical device.</span>
+  </header>
+
+  <ol class="steps" aria-label="Progress">
+    <li id="st1" class="active"><span class="n">1</span><span class="label">Record</span></li>
+    <li id="st2"><span class="n">2</span><span class="label">Analyze</span></li>
+    <li id="st3"><span class="n">3</span><span class="label">Result</span></li>
+  </ol>
+
+  <main aria-live="polite">
+
+    <!-- Screen 1: start -->
+    <section class="card" id="screen-start">
+      <h1>A 60 second voice check for memory health</h1>
+      <p class="lead">Speak for about one minute. The check listens to the quality of your voice, not to what you say, and tells you whether a simple follow up test is worth doing.</p>
+      <ul class="plain">
+        <li>Takes about two minutes in total.</li>
+        <li>Works with any phone or computer microphone.</li>
+        <li>In this prototype your recording never leaves your device.</li>
+      </ul>
+      <div class="btn-row two">
+        <button class="btn" id="btn-record">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+          Record my voice
+        </button>
+        <button class="btn secondary" id="btn-upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 10l5-5 5 5M4 20h16"/></svg>
+          Upload a recording
+        </button>
+        <input type="file" id="file-input" accept="audio/*" class="hidden" aria-label="Choose an audio file">
+      </div>
+      <div class="btn-row">
+        <button class="btn quiet" id="btn-sample">Try it with a sample recording instead</button>
+      </div>
+    </section>
+
+    <!-- Screen 2: recording -->
+    <section class="card hidden" id="screen-record">
+      <h1>Please talk for about one minute</h1>
+      <div class="prompt-box">
+        <strong>A suggestion of what to talk about</strong>
+        Describe what you did yesterday, from waking up until lunch. There are no right or wrong answers, and it does not need to be interesting.
+      </div>
+      <div class="notice hidden" id="mic-notice">
+        The microphone is not available, so this prototype is simulating a recording. Nothing is being captured.
+      </div>
+      <div class="rec-area">
+        <div class="ring" role="timer" aria-label="Recording time">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="track" cx="60" cy="60" r="52"/>
+            <circle class="prog" id="ring-prog" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="time"><div><span id="time-left">60</span><small>seconds left</small></div></div>
+        </div>
+        <div class="wave" id="wave" aria-hidden="true"></div>
+        <p class="muted small" id="rec-status"><span class="rec-dot" aria-hidden="true"></span>Recording. Speak in your normal voice.</p>
+      </div>
+      <div class="btn-row two">
+        <button class="btn" id="btn-stop">I am done</button>
+        <button class="btn secondary" id="btn-cancel">Cancel</button>
+      </div>
+      <p class="small muted" style="margin-top:14px">You can stop early once you have spoken for at least 20 seconds. The check works best with the full minute.</p>
+    </section>
+
+    <!-- Screen 3: analyzing -->
+    <section class="card hidden" id="screen-analyze">
+      <h1>Listening to your voice</h1>
+      <p class="lead">This takes a few seconds. The check measures how the voice sounds, not the words.</p>
+      <ol class="stages" id="stages">
+        <li><span class="ic" aria-hidden="true"></span><span>Checking the recording quality</span></li>
+        <li><span class="ic" aria-hidden="true"></span><span>Measuring voice steadiness (pitch and loudness stability)</span></li>
+        <li><span class="ic" aria-hidden="true"></span><span>Measuring voice clarity (breathiness and hoarseness)</span></li>
+        <li><span class="ic" aria-hidden="true"></span><span>Measuring speech rhythm (pauses and pace)</span></li>
+        <li><span class="ic" aria-hidden="true"></span><span>Comparing with the reference range for your age group</span></li>
+      </ol>
+    </section>
+
+    <!-- Screen 4: result -->
+    <section class="card hidden" id="screen-result">
+      <h1>Your result</h1>
+      <p class="lead">This is a first filter, not a diagnosis. It tells you whether a simple blood test is a sensible next step.</p>
+
+      <div class="tier" id="tier">
+        <div class="kicker">Voice check result</div>
+        <h2 id="tier-title"></h2>
+        <p id="tier-text" style="margin-bottom:0"></p>
+        <div class="scale" aria-hidden="true">
+          <div id="sc-low"></div><div id="sc-mid"></div><div id="sc-high"></div>
+        </div>
+        <div class="scale-labels" aria-hidden="true"><span>Low</span><span>Moderate</span><span>Elevated</span></div>
+      </div>
+
+      <h3>What the check heard</h3>
+      <ul class="indicators" id="indicators"></ul>
+
+      <div class="recommend">
+        <h3 id="rec-title"></h3>
+        <p id="rec-text"></p>
+      </div>
+
+      <p class="small muted">Voice changes have many everyday causes, including a cold, tiredness, medication, or a noisy room. A result in the moderate or elevated range is a reason to check, not a reason to worry.</p>
+
+      <div class="btn-row two">
+        <button class="btn secondary" id="btn-print">Print or save this summary</button>
+        <button class="btn" id="btn-restart">Start over</button>
+      </div>
+
+      <div class="demo">
+        <strong>Reviewer note.</strong> The result above is illustrative and was not produced by a model. Use these buttons to view each of the three outcomes.
+        <div class="chips" role="group" aria-label="Show example outcome">
+          <button class="chip" data-tier="0">Low</button>
+          <button class="chip" data-tier="1">Moderate</button>
+          <button class="chip" data-tier="2">Elevated</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- About and funnel -->
+    <section class="about">
+      <h2>Where the voice check fits</h2>
+      <p class="muted">Speech is not the diagnosis. It is the cheap first step that decides who needs the expensive tests, so that early diagnosis becomes affordable for everyone over 55.</p>
+      <div class="funnel">
+        <div class="stage first">
+          <div class="k">Step 0</div>
+          <strong>60 second voice check</strong>
+          <span>Any phone, near zero cost, everyone 55 and over.</span>
+        </div>
+        <div class="stage">
+          <div class="k">Step 1</div>
+          <strong>Blood test (plasma p-Tau217)</strong>
+          <span>Only for those flagged by voice. Targeted and much cheaper than imaging.</span>
+        </div>
+        <div class="stage">
+          <div class="k">Step 2</div>
+          <strong>PET scan or specialist</strong>
+          <span>Reserved for the few with a positive blood test.</span>
+        </div>
+        <div class="stage">
+          <div class="k">Step 3</div>
+          <strong>Treatment in the window</strong>
+          <span>New disease modifying drugs work best when started early.</span>
+        </div>
+      </div>
+
+      <h2 style="margin-top:28px">What the evidence looks like so far</h2>
+      <p class="muted">A weekend proof of concept on public speech data, evaluated on a locked test set that was opened once. The numbers are modest and reported as they are.</p>
+      <div class="facts">
+        <div class="fact"><b>0.62</b><span>AUC on the locked test set, speaker level split (0.5 is chance)</span></div>
+        <div class="fact"><b>344</b><span>clips from 171 speakers, real spontaneous speech</span></div>
+        <div class="fact"><b>Voice quality</b><span>carries the signal. Pause timing is weak, filled pauses add nothing</span></div>
+      </div>
+      <p class="small muted" style="margin-top:14px">Two tempting results were rejected on the way: a flashier model that overfit (0.61 in cross validation, 0.42 on the test set) and an early detection curve that did not hold up. Full code, tables and limitations are in the <a href="https://github.com/ct-s/dementianet-voicescreen">GitHub repository</a>.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><strong>Concept prototype. Not a medical device.</strong> This page demonstrates a product idea with illustrative data. It does not analyze audio, does not store anything, and must not be used to make health decisions. If you are worried about your memory, please talk to your doctor.</p>
+    <p>DementiaNet VoiceScreen is an open research proof of concept, MIT licensed. <a href="https://github.com/ct-s/dementianet-voicescreen">Source and results on GitHub</a>.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = ["screen-start", "screen-record", "screen-analyze", "screen-result"];
+  var DURATION = 60;
+  var MIN_SECONDS = 20;
+
+  var state = {
+    timer: null,
+    left: DURATION,
+    stream: null,
+    audioCtx: null,
+    analyser: null,
+    raf: null,
+    seed: 0
+  };
+
+  function show(id, step) {
+    screens.forEach(function (s) { $(s).classList.toggle("hidden", s !== id); });
+    [1, 2, 3].forEach(function (i) {
+      var li = $("st" + i);
+      li.classList.toggle("active", i === step);
+      li.classList.toggle("done", i < step);
+    });
+    var h = $(id).querySelector("h1");
+    if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* Waveform bars */
+  var wave = $("wave");
+  var BARS = 28;
+  for (var i = 0; i < BARS; i++) { wave.appendChild(document.createElement("i")); }
+  var bars = wave.children;
+
+  function drawWave(levels) {
+    for (var i = 0; i < BARS; i++) {
+      var v = levels ? levels[i] : 0.15 + Math.random() * 0.6;
+      bars[i].style.height = Math.max(6, Math.round(v * 56)) + "px";
+    }
+  }
+
+  function startLiveWave() {
+    var data = new Uint8Array(state.analyser.frequencyBinCount);
+    function loop() {
+      state.analyser.getByteFrequencyData(data);
+      var levels = [];
+      var stepSize = Math.max(1, Math.floor(data.length / 2 / BARS));
+      for (var i = 0; i < BARS; i++) {
+        var sum = 0;
+        for (var j = 0; j < stepSize; j++) { sum += data[i * stepSize + j]; }
+        levels.push(Math.min(1, (sum / stepSize) / 160));
+      }
+      drawWave(levels);
+      state.raf = requestAnimationFrame(loop);
+    }
+    loop();
+  }
+
+  function startFakeWave() {
+    function loop() { drawWave(null); state.raf = setTimeout(loop, 120); }
+    loop();
+  }
+
+  function stopWave() {
+    if (state.raf) { cancelAnimationFrame(state.raf); clearTimeout(state.raf); state.raf = null; }
+    for (var i = 0; i < BARS; i++) { bars[i].style.height = "8px"; }
+  }
+
+  /* Recording */
+  var ringProg = $("ring-prog");
+  var CIRC = 2 * Math.PI * 52;
+  ringProg.style.strokeDasharray = CIRC;
+
+  function setTime(left) {
+    state.left = left;
+    $("time-left").textContent = left;
+    ringProg.style.strokeDashoffset = CIRC * (left / DURATION);
+    $("btn-stop").disabled = (DURATION - left) < MIN_SECONDS;
+  }
+
+  function beginRecording() {
+    show("screen-record", 1);
+    setTime(DURATION);
+    $("mic-notice").classList.add("hidden");
+    var media = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+    var start = function (live) {
+      if (live) { startLiveWave(); } else { $("mic-notice").classList.remove("hidden"); startFakeWave(); }
+      state.timer = setInterval(function () {
+        setTime(state.left - 1);
+        if (state.left <= 0) { finishRecording(); }
+      }, 1000);
+    };
+    if (!media) { start(false); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      state.stream = stream;
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      state.audioCtx = new Ctx();
+      state.analyser = state.audioCtx.createAnalyser();
+      state.analyser.fftSize = 256;
+      state.audioCtx.createMediaStreamSource(stream).connect(state.analyser);
+      start(true);
+    }).catch(function () { start(false); });
+  }
+
+  function teardownRecording() {
+    clearInterval(state.timer); state.timer = null;
+    stopWave();
+    if (state.stream) { state.stream.getTracks().forEach(function (t) { t.stop(); }); state.stream = null; }
+    if (state.audioCtx) { state.audioCtx.close(); state.audioCtx = null; state.analyser = null; }
+  }
+
+  function finishRecording() {
+    var spoken = DURATION - state.left;
+    teardownRecording();
+    state.seed = spoken * 7 + Date.now() % 97;
+    analyze();
+  }
+
+  /* Analyzing */
+  function analyze() {
+    show("screen-analyze", 2);
+    var items = $("stages").children;
+    for (var i = 0; i < items.length; i++) {
+      items[i].className = "";
+      items[i].querySelector(".ic").innerHTML = "";
+    }
+    var idx = 0;
+    function next() {
+      if (idx > 0) {
+        items[idx - 1].className = "done";
+        items[idx - 1].querySelector(".ic").innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+      }
+      if (idx >= items.length) { showResult(pickTier()); return; }
+      items[idx].className = "running";
+      idx++;
+      setTimeout(next, 700 + Math.round(Math.random() * 500));
+    }
+    setTimeout(next, 300);
+  }
+
+  function pickTier() {
+    /* Illustrative only: the tier is chosen from a seed, not from the audio. */
+    var r = Math.abs(Math.sin(state.seed)) ;
+    return r < 0.45 ? 0 : (r < 0.8 ? 1 : 2);
+  }
+
+  /* Result content */
+  var TIERS = [
+    {
+      cls: "low",
+      title: "Low: your voice sounds within the typical range",
+      text: "Voice steadiness, clarity and rhythm all fell inside the range we see in people your age without memory problems.",
+      recTitle: "Recommendation: no further test needed now",
+      recText: "Repeat the voice check in about a year, or sooner if you or your family notice changes in memory or speech. A low result does not rule out problems, so please still talk to your doctor if you are concerned.",
+      ind: [
+        ["Voice steadiness", 0.42, "ok", "Typical", "How evenly your pitch and loudness hold from one moment to the next (jitter and shimmer)."],
+        ["Voice clarity", 0.5, "ok", "Typical", "How clear the voice sounds compared with breathy or hoarse noise (harmonics to noise ratio)."],
+        ["Speech rhythm", 0.46, "ok", "Typical", "Pace of speaking and the length and number of pauses."]
+      ]
+    },
+    {
+      cls: "mid",
+      title: "Moderate: a few voice measures sit outside the typical range",
+      text: "Your speech rhythm was typical, but voice steadiness and clarity were slightly outside the range we usually see. This pattern is worth checking with a simple test.",
+      recTitle: "Recommendation: arrange a blood test",
+      recText: "We suggest a plasma p-Tau217 blood test through your doctor. It is a standard blood draw that can confirm or, more often, rule out early Alzheimer's changes. Bring this summary to the appointment.",
+      ind: [
+        ["Voice steadiness", 0.78, "warn", "Slightly outside", "Pitch and loudness varied a little more from moment to moment than is typical (jitter and shimmer)."],
+        ["Voice clarity", 0.74, "warn", "Slightly outside", "The voice carried a little more breathy noise than typical (harmonics to noise ratio)."],
+        ["Speech rhythm", 0.52, "ok", "Typical", "Pace of speaking and the length and number of pauses."]
+      ]
+    },
+    {
+      cls: "high",
+      title: "Elevated: several voice measures sit outside the typical range",
+      text: "Voice steadiness and clarity were clearly outside the range we see in people your age without memory problems, and speech rhythm was slightly outside it. This is a reason to check, not a diagnosis.",
+      recTitle: "Recommendation: arrange a blood test soon",
+      recText: "We suggest a plasma p-Tau217 blood test through your doctor within the next few weeks. Only a blood test, and if needed a specialist, can tell whether these voice changes are related to memory health or to something everyday such as a cold or tiredness.",
+      ind: [
+        ["Voice steadiness", 0.92, "bad", "Outside", "Pitch and loudness varied noticeably more from moment to moment than is typical (jitter and shimmer)."],
+        ["Voice clarity", 0.88, "bad", "Outside", "The voice carried noticeably more breathy noise than typical (harmonics to noise ratio)."],
+        ["Speech rhythm", 0.7, "warn", "Slightly outside", "Slightly slower pace and a few longer pauses than typical."]
+      ]
+    }
+  ];
+
+  function showResult(t) {
+    var d = TIERS[t];
+    var tier = $("tier");
+    tier.className = "tier " + d.cls;
+    $("tier-title").textContent = d.title;
+    $("tier-text").textContent = d.text;
+    ["low", "mid", "high"].forEach(function (c, i) {
+      $("sc-" + c).className = i <= t ? "on " + d.cls : "";
+    });
+    var list = $("indicators");
+    list.innerHTML = "";
+    d.ind.forEach(function (row) {
+      var li = document.createElement("li");
+      li.innerHTML =
+        '<div class="ind-head"><strong></strong><span class="tag"></span></div>' +
+        '<div class="bar" aria-hidden="true"><div class="range"></div><div class="dot"></div></div>' +
+        '<p class="ind-note"></p>';
+      li.querySelector("strong").textContent = row[0];
+      var tag = li.querySelector(".tag");
+      tag.className = "tag " + row[2];
+      tag.textContent = row[3];
+      li.querySelector(".dot").style.left = Math.round(row[1] * 100) + "%";
+      li.querySelector(".ind-note").textContent = row[4];
+      list.appendChild(li);
+    });
+    $("rec-title").textContent = d.recTitle;
+    $("rec-text").textContent = d.recText;
+    var chips = document.querySelectorAll(".chip");
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].setAttribute("aria-pressed", String(i === t));
+    }
+    show("screen-result", 3);
+  }
+
+  /* Wiring */
+  $("btn-record").addEventListener("click", beginRecording);
+  $("btn-upload").addEventListener("click", function () { $("file-input").click(); });
+  $("file-input").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) { return; }
+    state.seed = (f.size % 1000) + f.name.length;
+    e.target.value = "";
+    analyze();
+  });
+  $("btn-sample").addEventListener("click", function () { state.seed = 0.7; analyze(); });
+  $("btn-stop").addEventListener("click", finishRecording);
+  $("btn-cancel").addEventListener("click", function () { teardownRecording(); show("screen-start", 1); });
+  $("btn-restart").addEventListener("click", function () { show("screen-start", 1); });
+  $("brand").addEventListener("click", function (e) { e.preventDefault(); teardownRecording(); show("screen-start", 1); });
+  $("btn-print").addEventListener("click", function () { window.print(); });
+  var chips = document.querySelectorAll(".chip");
+  for (var i = 0; i < chips.length; i++) {
+    chips[i].addEventListener("click", function () { showResult(Number(this.getAttribute("data-tier"))); });
+  }
+})();
+</script>
+</body>
+</html>

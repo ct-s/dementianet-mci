@@ -2,665 +2,1003 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DementiaNet VoiceScreen</title>
-<meta name="description" content="Concept prototype of a 60 second voice check that pre-screens for Alzheimer's risk. Not a medical device.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caesura Voice Check</title>
+<meta name="description" content="A 60-second voice check that measures the timing of ordinary speech and tells you whether a blood test for early Alzheimer's is worth doing. Research prototype. Not a medical device.">
+<meta name="theme-color" content="#16302e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
 <style>
+  /* ==================================================================
+     Caesura — "Vital" system, calm palette
+
+     Tuned for a user who may be 70+. Large areas stay low-saturation;
+     saturation is spent only on small marks. One deep pine panel holds
+     the signal; --signal (soft mint) is the waveform and appears only
+     on that panel; --pause (clay) is spent only on silence. Forest and
+     clay-deep are reserved for the two outcomes and nothing else.
+     Every text pair here clears WCAG AA at its size.
+     ================================================================== */
   :root {
-    --bg: #f4f6f7;
-    --card: #ffffff;
-    --text: #1f2933;
-    --muted: #5b6770;
-    --line: #dde3e7;
-    --accent: #2b6777;
-    --accent-dark: #1f4f5c;
-    --accent-soft: #e6f0f2;
-    --low: #2f7d4f;
-    --low-soft: #e7f3ec;
-    --mid: #a8701a;
-    --mid-soft: #fbf1df;
-    --high: #b0473c;
-    --high-soft: #f9e8e6;
-    --focus: #1a73e8;
-    --radius: 14px;
+    --white:   #fbfbf9;
+    --panel:   #f0f3f0;
+    --panel-2: #e5eae6;
+    --ink:     #16211f;
+    --ink-2:   #4b5c58;
+    --ink-3:   #66756f;
+    --line:    #e0e6e1;
+    --deep:    #16302e;
+    --deep-2:  #1e3d3a;
+    --signal:  #a8e0cd;
+    --signal-2:#c3ebde;
+    --pause:   #e9ae84;
+    --pause-deep:#7a4a32;
+    --pause-wash:#f7ece4;
+    --forest:  #1f4d40;
+    --forest-wash:#e8f1ec;
+    --focus:   #2563eb;
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 72px; --s9: 96px;
+    --r: 24px; --r-sm: 14px; --pill: 999px;
+    --display: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
+
   * { box-sizing: border-box; }
-  html { font-size: 19px; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: var(--accent); }
-  a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
-    outline: 3px solid var(--focus);
-    outline-offset: 3px;
-  }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px 60px; }
+  html { font-size: 17.5px; -webkit-text-size-adjust: 100%; }
+  body { margin: 0; min-height: 100vh; background: var(--white); color: var(--ink); font-family: var(--display); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  a { color: var(--ink); text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+  [tabindex="-1"]:focus { outline: none; }
 
-  /* Header */
-  header { padding: 28px 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
-  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
-  .brand .mark {
-    width: 40px; height: 40px; border-radius: 10px; background: var(--accent);
-    display: grid; place-items: center; flex: none;
-  }
-  .brand .mark svg { width: 24px; height: 24px; }
-  .brand strong { font-size: 1.15rem; letter-spacing: -0.01em; }
-  .pill {
-    font-size: 0.8rem; color: var(--muted); border: 1px solid var(--line); background: var(--card);
-    padding: 5px 12px; border-radius: 999px; white-space: nowrap;
-  }
+  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.03em; }
+  h1 { font-size: clamp(2.2rem, 5.6vw, 3.1rem); font-weight: 800; line-height: 1.02; }
+  h2 { font-size: 1.55rem; font-weight: 800; line-height: 1.12; letter-spacing: -.025em; }
+  h3 { font-size: 1.05rem; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; }
+  p { margin: 0; }
+  .lead { font-size: 1.125rem; color: var(--ink-2); line-height: 1.5; }
+  .fine { font-size: .9rem; line-height: 1.5; color: var(--ink-2); }
+  .tiny { font-size: .8rem; line-height: 1.5; color: var(--ink-3); }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .label { font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+  .stack { display: flex; flex-direction: column; } .stack > * { min-width: 0; }
+  .g2 { gap: var(--s2); } .g3 { gap: var(--s3); } .g4 { gap: var(--s4); } .g5 { gap: var(--s5); } .g6 { gap: var(--s6); } .g7 { gap: var(--s7); }
+  .hide { display: none !important; }
 
-  /* Steps */
-  .steps { display: flex; gap: 8px; margin: 22px 0 18px; padding: 0; list-style: none; }
-  .steps li {
-    flex: 1; display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-    border-radius: 10px; background: var(--card); border: 1px solid var(--line);
-    color: var(--muted); font-size: 0.9rem;
-  }
-  .steps li .n {
-    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--line); color: var(--text); font-weight: 600; flex: none; font-size: 0.85rem;
-  }
-  .steps li.active { border-color: var(--accent); color: var(--text); }
-  .steps li.active .n { background: var(--accent); color: #fff; }
-  .steps li.done .n { background: var(--low); color: #fff; }
-  @media (max-width: 520px) { .steps li span.label { display: none; } .steps li { justify-content: center; } }
+  .app { max-width: 720px; margin: 0 auto; padding: 0 var(--s5) var(--s9); }
+  @media (max-width: 560px) { .app { padding: 0 var(--s4) var(--s8); } }
 
-  /* Cards */
-  .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 30px 28px; box-shadow: 0 1px 2px rgba(20, 30, 40, 0.04);
-  }
-  @media (max-width: 520px) { .card { padding: 24px 18px; } }
-  h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 12px; letter-spacing: -0.01em; }
-  h2 { font-size: 1.3rem; line-height: 1.3; margin: 0 0 10px; }
-  h3 { font-size: 1.05rem; margin: 0 0 6px; }
-  p { margin: 0 0 14px; }
-  .lead { font-size: 1.1rem; color: var(--muted); }
-  .muted { color: var(--muted); }
-  .small { font-size: 0.9rem; }
-  ul.plain { padding-left: 1.2em; margin: 0 0 16px; }
-  ul.plain li { margin-bottom: 6px; }
+  /* ---- top bar ---- */
+  .bar { display: flex; align-items: center; gap: var(--s3); padding: var(--s5) 0 var(--s6); }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .logo .mark { width: 34px; height: 34px; border-radius: 10px; background: var(--deep); display: grid; place-items: center; flex: none; }
+  .logo .mark svg { width: 20px; height: 20px; display: block; }
+  .logo b { font-size: 1.1rem; font-weight: 800; letter-spacing: -.03em; }
+  .bar .spacer { flex: 1; }
+  .chip { appearance: none; font: inherit; font-weight: 700; font-size: .82rem; background: var(--deep); color: var(--white); border: 0; border-radius: var(--pill); padding: 10px 16px; cursor: pointer; white-space: nowrap; transition: background .15s, transform .08s; }
+  .chip:hover { background: var(--deep-2); }
+  .chip:active { transform: translateY(1px); }
+  .badge { display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; font-family: var(--mono); font-size: .74rem; letter-spacing: .04em; color: var(--pause-deep); background: var(--pause-wash); border-radius: var(--pill); padding: 7px 12px 7px 10px; }
+  .badge i { width: 7px; height: 7px; border-radius: 50%; background: var(--pause); display: block; }
 
-  /* Buttons */
-  .btn {
-    appearance: none; border: 2px solid var(--accent); background: var(--accent); color: #fff;
-    font: inherit; font-weight: 600; font-size: 1.05rem; min-height: 60px; padding: 12px 24px;
-    border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-    gap: 12px; width: 100%; text-decoration: none; transition: background 0.15s, border-color 0.15s;
-  }
-  .btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
-  .btn.secondary { background: var(--card); color: var(--accent); }
-  .btn.secondary:hover { background: var(--accent-soft); }
-  .btn.quiet {
-    background: transparent; border-color: transparent; color: var(--accent); min-height: 48px;
-    font-weight: 500; text-decoration: underline; text-underline-offset: 4px;
-  }
-  .btn.quiet:hover { background: var(--accent-soft); }
-  .btn:disabled { opacity: 0.5; cursor: default; }
-  .btn svg { width: 24px; height: 24px; flex: none; }
-  .btn-row { display: grid; gap: 12px; margin-top: 20px; }
-  @media (min-width: 560px) { .btn-row.two { grid-template-columns: 1fr 1fr; } }
+  /* ---- scenes ---- */
+  .scene { animation: rise .42s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+  .sect { display: flex; flex-direction: column; gap: var(--s5); }
 
-  /* Recording */
-  .prompt-box {
-    background: var(--accent-soft); border-radius: 12px; padding: 18px 20px; margin: 4px 0 22px;
-  }
-  .prompt-box strong { display: block; margin-bottom: 4px; }
-  .rec-area { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 8px 0 6px; }
-  .ring { position: relative; width: 168px; height: 168px; }
-  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .ring circle { fill: none; stroke-width: 10; }
-  .ring .track { stroke: var(--line); }
-  .ring .prog { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 0.9s linear; }
-  .ring .time {
-    position: absolute; inset: 0; display: grid; place-items: center; font-size: 2rem;
-    font-weight: 600; font-variant-numeric: tabular-nums;
-  }
-  .ring .time small { display: block; font-size: 0.75rem; font-weight: 500; color: var(--muted); text-align: center; }
-  .wave { display: flex; align-items: center; gap: 4px; height: 56px; }
-  .wave i {
-    display: block; width: 6px; height: 8px; border-radius: 3px; background: var(--accent);
-    transition: height 0.12s;
-  }
-  .rec-dot {
-    display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--high);
-    margin-right: 8px; vertical-align: -1px; animation: blink 1.2s infinite;
-  }
-  @keyframes blink { 50% { opacity: 0.25; } }
-  .notice {
-    border-left: 4px solid var(--mid); background: var(--mid-soft); padding: 12px 16px; border-radius: 8px;
-    font-size: 0.95rem; margin: 0 0 16px;
-  }
+  /* ---- the deep signal panel ---- */
+  .signal { background: var(--deep); color: var(--white); border-radius: var(--r); padding: var(--s5); position: relative; overflow: hidden; }
+  .signal .label { color: rgba(255,255,255,.55); }
+  .signal canvas { display: block; width: 100%; }
+  .signal .key { display: flex; gap: var(--s4); margin-top: var(--s3); font-size: .78rem; color: rgba(255,255,255,.6); }
+  .signal .key span { display: inline-flex; align-items: center; gap: 6px; }
+  .signal .key i { width: 9px; height: 9px; border-radius: 2px; display: block; }
+  .signal .now { position: absolute; top: var(--s5); bottom: var(--s5); right: var(--s5); width: 2px; background: var(--signal); opacity: .7; }
 
-  /* Analyzing */
-  .stages { list-style: none; padding: 0; margin: 20px 0 8px; }
-  .stages li {
-    display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line);
-    color: var(--muted);
-  }
-  .stages li:first-child { border-top: 0; }
-  .stages li .ic {
-    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--line); flex: none;
-    display: grid; place-items: center;
-  }
-  .stages li.running { color: var(--text); }
-  .stages li.running .ic { border-color: var(--accent); border-top-color: transparent; animation: spin 0.9s linear infinite; }
-  .stages li.done { color: var(--text); }
-  .stages li.done .ic { background: var(--low); border-color: var(--low); }
-  .stages li.done .ic svg { width: 18px; height: 18px; }
+  /* ---- start ---- */
+  .hero-copy { display: flex; flex-direction: column; gap: var(--s4); }
+  .points { display: grid; gap: var(--s3); }
+  @media (min-width: 600px) { .points { grid-template-columns: repeat(3, 1fr); } }
+  .point { background: var(--panel); border-radius: var(--r-sm); padding: var(--s4); display: flex; flex-direction: column; gap: 6px; }
+  .point b { font-weight: 800; font-size: .95rem; letter-spacing: -.01em; }
+  .point span { font-size: .85rem; color: var(--ink-2); line-height: 1.45; }
+  .point .ico { width: 30px; height: 30px; border-radius: 9px; background: var(--deep); color: var(--signal); display: grid; place-items: center; margin-bottom: 4px; }
+  .point .ico svg { width: 16px; height: 16px; }
+
+  .consent { background: var(--panel); border-radius: var(--r-sm); padding: var(--s4); }
+  .consent label { display: flex; gap: var(--s3); align-items: flex-start; cursor: pointer; font-size: .9rem; color: var(--ink-2); line-height: 1.45; }
+  .consent input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--deep); cursor: pointer; }
+
+  .btn { appearance: none; font: inherit; font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em; min-height: 62px; padding: 14px var(--s6); border-radius: var(--pill); display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; cursor: pointer; text-decoration: none; background: var(--deep); color: var(--signal); border: 2px solid var(--deep); transition: background .16s, border-color .16s, transform .08s, opacity .16s; }
+  .btn:hover { background: var(--deep-2); border-color: var(--deep-2); }
+  .btn:active { transform: translateY(1px); }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .btn[data-v="line"] { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn[data-v="line"]:hover { border-color: var(--ink); background: var(--white); }
+  .btn[data-v="quiet"] { background: transparent; border-color: transparent; color: var(--ink-2); min-height: 44px; font-size: .9rem; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+  .btn[data-v="quiet"]:hover { color: var(--ink); }
+  /* A dark pill at low opacity reads as broken rather than as "not yet".
+     Disabled state is its own legible treatment instead. */
+  .btn:disabled { background: var(--panel-2); border-color: var(--panel-2); color: var(--ink-3); cursor: default; }
+  .btn[data-v="quiet"]:disabled { background: transparent; border-color: transparent; color: var(--ink-3); }
+  .btns { display: grid; gap: var(--s3); }
+  @media (min-width: 540px) { .btns[data-cols="2"] { grid-template-columns: 1fr 1fr; } }
+
+  /* ---- record ---- */
+  .prompt { background: var(--panel); border-radius: var(--r-sm); padding: var(--s4) var(--s5); display: flex; flex-direction: column; gap: 4px; }
+  .prompt p { font-size: 1.15rem; font-weight: 700; letter-spacing: -.015em; }
+  .clock { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s4); margin-top: var(--s4); color: var(--white); }
+  .clock .t { font-family: var(--mono); font-size: 2.6rem; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
+  .clock .t small { font-family: var(--display); font-size: .8rem; color: rgba(255,255,255,.55); margin-left: 8px; font-weight: 600; }
+  .clock .status { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 700; color: rgba(255,255,255,.85); padding-bottom: 6px; }
+  .clock .status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--signal); animation: blink 1.4s ease-in-out infinite; }
+  .clock .status[data-quiet="1"]::before { background: var(--pause); }
+  @keyframes blink { 50% { opacity: .25; } }
+  .rail { height: 5px; border-radius: 3px; background: rgba(255,255,255,.12); overflow: hidden; margin-top: var(--s4); }
+  .rail i { display: block; height: 100%; background: var(--signal); width: 0; transition: width .95s linear; }
+  .livect { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); }
+  .livect div { background: var(--panel); border-radius: var(--r-sm); padding: var(--s4); }
+  .livect b { display: block; font-family: var(--mono); font-size: 1.5rem; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
+  .livect span { display: block; font-size: .78rem; color: var(--ink-3); margin-top: 6px; }
+  .warnbox { border-radius: var(--r-sm); background: var(--pause-wash); padding: var(--s4) var(--s5); display: flex; flex-direction: column; gap: 4px; }
+  .warnbox h3 { color: var(--pause-deep); }
+  .warnbox p { font-size: .9rem; color: var(--ink-2); }
+
+  /* ---- analysing ---- */
+  .steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s2); }
+  .steps li { display: flex; align-items: center; gap: var(--s4); padding: var(--s4) var(--s5); border-radius: var(--r-sm); background: var(--panel); color: var(--ink-3); font-weight: 600; font-size: .98rem; transition: background .2s, color .2s; }
+  .steps li .mk { width: 26px; height: 26px; flex: none; border-radius: 50%; border: 2px solid var(--panel-2); display: grid; place-items: center; background: var(--white); }
+  .steps li[data-s="run"] { color: var(--ink); background: var(--panel-2); }
+  .steps li[data-s="run"] .mk { border-color: var(--ink); border-top-color: transparent; animation: spin .85s linear infinite; }
+  .steps li[data-s="ok"] { color: var(--ink); }
+  .steps li[data-s="ok"] .mk { background: var(--deep); border-color: var(--deep); }
+  .steps li[data-s="ok"] .mk svg { width: 14px; height: 14px; display: block; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Result */
-  .tier {
-    border-radius: 12px; padding: 22px 24px; margin: 6px 0 22px; border: 1px solid transparent;
-  }
-  .tier.low { background: var(--low-soft); border-color: #cfe5d8; }
-  .tier.mid { background: var(--mid-soft); border-color: #f0dfb8; }
-  .tier.high { background: var(--high-soft); border-color: #efc9c4; }
-  .tier .kicker { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
-  .tier h2 { font-size: 1.55rem; margin-bottom: 8px; }
-  .tier.low h2 { color: var(--low); }
-  .tier.mid h2 { color: var(--mid); }
-  .tier.high h2 { color: var(--high); }
-  .scale { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 16px 0 6px; }
-  .scale div {
-    height: 12px; border-radius: 6px; background: var(--line); position: relative;
-  }
-  .scale div.on.low { background: var(--low); }
-  .scale div.on.mid { background: var(--mid); }
-  .scale div.on.high { background: var(--high); }
-  .scale-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 0.8rem; color: var(--muted); }
-  .scale-labels span:nth-child(2) { text-align: center; }
-  .scale-labels span:nth-child(3) { text-align: right; }
+  /* ---- outcome ---- */
+  .outcome { border-radius: var(--r); padding: var(--s6) var(--s5); color: var(--white); display: flex; flex-direction: column; gap: var(--s4); }
+  .outcome[data-tier="typical"] { background: var(--forest); }
+  .outcome[data-tier="elevated"] { background: var(--pause-deep); }
+  .outcome[data-tier="none"] { background: var(--deep); }
+  .outcome .label { color: rgba(255,255,255,.6); }
+  .outcome h1 { font-size: clamp(2rem, 5.2vw, 2.8rem); }
+  .outcome .lead { color: rgba(255,255,255,.85); font-size: 1.05rem; }
+  .position { margin-top: var(--s2); }
+  .position .track { position: relative; height: 12px; border-radius: 6px; background: rgba(255,255,255,.14); }
+  .position .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: rgba(255,255,255,.22); width: 0; transition: width 1.1s cubic-bezier(.2,.7,.2,1); }
+  .position .cut { position: absolute; top: -7px; bottom: -7px; width: 2px; background: rgba(255,255,255,.55); }
+  .position .you { position: absolute; top: 50%; width: 24px; height: 24px; border-radius: 50%; background: var(--signal); border: 4px solid var(--white); transform: translate(-50%, -50%); box-shadow: 0 2px 8px rgba(0,0,0,.35); transition: left 1.1s cubic-bezier(.2,.7,.2,1); }
+  .position .lbls { display: flex; justify-content: space-between; gap: var(--s4); font-size: .76rem; color: rgba(255,255,255,.6); margin-top: 12px; }
+  .position .lbls span:last-child { text-align: right; }
 
-  .indicators { list-style: none; padding: 0; margin: 6px 0 20px; }
-  .indicators li { padding: 14px 0; border-top: 1px solid var(--line); }
-  .indicators li:first-child { border-top: 0; }
-  .ind-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .ind-head strong { font-size: 1rem; }
-  .ind-head .tag { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
-  .tag.ok { color: var(--low); }
-  .tag.warn { color: var(--mid); }
-  .tag.bad { color: var(--high); }
-  .bar { height: 10px; border-radius: 5px; background: var(--line); margin: 10px 0 8px; position: relative; overflow: hidden; }
-  .bar .range { position: absolute; top: 0; bottom: 0; left: 15%; right: 15%; background: #c9d6dc; border-radius: 5px; }
-  .bar .dot {
-    position: absolute; top: -3px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent);
-    border: 3px solid #fff; box-shadow: 0 0 0 1px var(--accent); transform: translateX(-50%);
-  }
-  .ind-note { font-size: 0.92rem; color: var(--muted); margin: 0; }
+  .bignums { display: grid; gap: var(--s3); }
+  @media (min-width: 540px) { .bignums { grid-template-columns: 1fr 1fr; } }
+  .bignum { background: var(--panel); border-radius: var(--r-sm); padding: var(--s5); display: flex; flex-direction: column; gap: 8px; }
+  .bignum b { font-family: var(--mono); font-size: clamp(2.6rem, 7vw, 3.6rem); font-weight: 500; line-height: .95; letter-spacing: -.04em; }
+  .bignum b small { font-family: var(--display); font-size: 1rem; font-weight: 700; color: var(--ink-3); letter-spacing: 0; margin-left: 6px; }
+  .bignum > span { font-size: .86rem; color: var(--ink-2); line-height: 1.45; }
 
-  .recommend {
-    border: 2px solid var(--accent); border-radius: 12px; padding: 18px 20px; margin: 6px 0 20px;
-  }
-  .recommend h3 { color: var(--accent-dark); }
-  .recommend p:last-child { margin-bottom: 0; }
+  .next { border-radius: var(--r-sm); background: var(--panel); padding: var(--s5); display: flex; gap: var(--s4); align-items: flex-start; }
+  .next .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--deep); color: var(--signal); display: grid; place-items: center; flex: none; }
+  .next .ico svg { width: 22px; height: 22px; }
+  .next h3 { margin-bottom: 4px; }
+  .next p { font-size: .92rem; color: var(--ink-2); }
 
-  .demo {
-    margin-top: 26px; padding-top: 18px; border-top: 1px dashed var(--line); font-size: 0.9rem; color: var(--muted);
-  }
-  .demo .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  .chip {
-    font: inherit; font-size: 0.9rem; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line);
-    background: var(--card); color: var(--text); cursor: pointer; min-height: 40px;
-  }
-  .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; }
+  .tlaxis { display: flex; justify-content: space-between; margin-top: var(--s2); font-family: var(--mono); font-size: .74rem; color: rgba(255,255,255,.5); }
+  .grid2 { display: grid; gap: var(--s2); }
+  @media (min-width: 540px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+  .cell { background: var(--panel); border-radius: var(--r-sm); padding: var(--s4); }
+  .cell .k { font-size: .82rem; color: var(--ink-2); font-weight: 600; }
+  .cell .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.35rem; font-weight: 500; margin-top: 4px; letter-spacing: -.02em; }
+  .cell .h { font-size: .76rem; color: var(--ink-3); margin-top: 4px; line-height: 1.4; }
 
-  /* Funnel */
-  section.about { margin-top: 34px; }
-  .funnel { display: grid; gap: 10px; margin: 14px 0 10px; }
-  @media (min-width: 640px) { .funnel { grid-template-columns: repeat(4, 1fr); } }
-  .funnel .stage {
-    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px; position: relative;
+  /* ---- real study cases ---- */
+  .cases { display: flex; flex-direction: column; gap: var(--s2); }
+  .case { display: grid; grid-template-columns: auto 1fr auto; gap: var(--s3) var(--s4); align-items: center;
+          background: var(--panel); border-radius: var(--r-sm); padding: var(--s4); }
+  .case .who { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .case .who b { font-family: var(--mono); font-size: .82rem; font-weight: 500; color: var(--ink-3); }
+  .case .who span { font-size: .92rem; font-weight: 700; letter-spacing: -.01em; }
+  .case .scale { position: relative; height: 8px; border-radius: 4px; background: var(--panel-2); }
+  .case .scale .cut { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink-3); opacity: .5; }
+  .case .scale .dot { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%;
+                      transform: translate(-50%,-50%); border: 3px solid var(--white); }
+  .case .scale .dot[data-t="elevated"] { background: var(--pause-deep); }
+  .case .scale .dot[data-t="typical"] { background: var(--forest); }
+  .case .verdict { text-align: right; display: flex; flex-direction: column; gap: 3px; }
+  .case .verdict b { font-size: .82rem; font-weight: 700; white-space: nowrap; }
+  .case .verdict b[data-t="elevated"] { color: var(--pause-deep); }
+  .case .verdict b[data-t="typical"] { color: var(--forest); }
+  .case .verdict span { font-size: .74rem; font-family: var(--mono); }
+  .case .verdict span[data-ok="0"] { color: var(--pause-deep); font-weight: 500; }
+  .case .verdict span[data-ok="1"] { color: var(--ink-3); }
+  @media (max-width: 560px) {
+    .case { grid-template-columns: 1fr auto; }
+    .case .scale { grid-column: 1 / -1; order: 3; }
   }
-  .funnel .stage.first { border-color: var(--accent); background: var(--accent-soft); }
-  .funnel .stage .k { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-  .funnel .stage strong { display: block; font-size: 1rem; margin: 2px 0 4px; }
-  .funnel .stage span { font-size: 0.88rem; color: var(--muted); }
-  .facts { display: grid; gap: 10px; margin-top: 14px; }
-  @media (min-width: 560px) { .facts { grid-template-columns: 1fr 1fr 1fr; } }
-  .fact { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-  .fact b { display: block; font-size: 1.4rem; color: var(--accent-dark); line-height: 1.2; }
-  .fact span { font-size: 0.88rem; color: var(--muted); }
+  .caselegend { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); font-size: .78rem; color: var(--ink-3); }
+  .caselegend span { display: inline-flex; align-items: center; gap: 6px; }
+  .caselegend i { width: 10px; height: 10px; border-radius: 50%; display: block; }
 
-  footer { margin-top: 36px; font-size: 0.88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
-  .hidden { display: none !important; }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  details.row { border-top: 1px solid var(--line); }
+  details.row:last-of-type { border-bottom: 1px solid var(--line); }
+  details.row summary { cursor: pointer; list-style: none; padding: var(--s4) 0; font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: space-between; gap: var(--s3); letter-spacing: -.01em; }
+  details.row summary::-webkit-details-marker { display: none; }
+  details.row summary::after { content: "+"; font-family: var(--mono); font-size: 1.2rem; color: var(--ink-3); }
+  details.row[open] summary::after { content: "\2212"; }
+  details.row > div { padding: 0 0 var(--s5); display: flex; flex-direction: column; gap: var(--s4); }
 
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
-  }
-  @media print {
-    body { background: #fff; }
-    header, .steps, .btn-row, .demo, section.about { display: none !important; }
-    .card { border: 0; box-shadow: none; padding: 0; }
-  }
+  /* ---- reviewer panel ---- */
+  .scrim { position: fixed; inset: 0; background: rgba(16,19,18,.45); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 40; }
+  .scrim[data-open="1"] { opacity: 1; pointer-events: auto; }
+  .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(580px, 100%); background: var(--white); z-index: 41; transform: translateX(100%); transition: transform .34s cubic-bezier(.2,.7,.2,1); display: flex; flex-direction: column; overflow: hidden; }
+  .panel[data-open="1"] { transform: none; }
+  .panel-head { display: flex; align-items: center; gap: var(--s3); padding: var(--s5); border-bottom: 1px solid var(--line); flex: none; }
+  .panel-head h2 { flex: 1; font-size: 1.2rem; }
+  .xbtn { appearance: none; background: var(--panel); border: 0; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; color: var(--ink); display: grid; place-items: center; flex: none; }
+  .xbtn:hover { background: var(--panel-2); }
+  .xbtn svg { width: 16px; height: 16px; }
+  .panel-body { overflow-y: auto; padding: var(--s5); display: flex; flex-direction: column; gap: var(--s6); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); }
+  .stat { background: var(--deep); color: var(--white); border-radius: var(--r-sm); padding: var(--s4); }
+  .stat b { display: block; font-family: var(--mono); font-size: 1.6rem; font-weight: 500; color: var(--signal); line-height: 1; letter-spacing: -.02em; }
+  .stat span { display: block; font-size: .74rem; color: rgba(255,255,255,.6); margin-top: 8px; line-height: 1.4; }
+  table.tbl { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  table.tbl th, table.tbl td { text-align: left; padding: 10px 8px; border-top: 1px solid var(--line); }
+  table.tbl thead th { border-top: 0; font-family: var(--mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  table.tbl td.v { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.tbl tr[data-hi="1"] td { background: var(--panel); font-weight: 700; }
+  table.tbl tr[data-hi="1"] td:first-child { border-radius: 8px 0 0 8px; }
+  table.tbl tr[data-hi="1"] td:last-child { border-radius: 0 8px 8px 0; }
+  .kill { border-radius: var(--r-sm); background: var(--panel); padding: var(--s4); display: flex; flex-direction: column; gap: 4px; }
+  .kill b { font-size: .95rem; }
+  .kill .fine { color: var(--ink-2); }
+  .chain { display: flex; flex-direction: column; gap: var(--s2); }
+  .link { display: flex; gap: var(--s3); align-items: flex-start; background: var(--panel); border-radius: var(--r-sm); padding: var(--s3) var(--s4); }
+  .link[data-here="1"] { background: var(--deep); color: var(--white); }
+  .link[data-here="1"] .t { color: var(--signal); }
+  .link[data-here="1"] span span { color: rgba(255,255,255,.7); }
+  .link .t { font-family: var(--mono); font-size: .72rem; color: var(--ink-3); flex: none; width: 48px; padding-top: 3px; }
+  .link b { display: block; font-size: .95rem; }
+  .link span span { font-size: .82rem; color: var(--ink-2); }
+  ul.lim { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s2); }
+  ul.lim li { display: flex; gap: var(--s3); font-size: .9rem; color: var(--ink-2); line-height: 1.5; }
+  ul.lim li::before { content: "—"; color: var(--ink-3); flex: none; }
+  footer { margin-top: var(--s8); padding-top: var(--s5); border-top: 1px solid var(--line); }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+  @media print { .bar, .btns, .scrim, .panel, .badge, details.row { display: none !important; } .signal, .outcome { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
 
-  <header>
-    <a class="brand" href="#" id="brand">
+  <header class="bar">
+    <a class="logo" href="#" id="home">
       <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
-          <path d="M4 12h2M8 7v10M12 4v16M16 8v8M20 11v2"/>
-        </svg>
+        <svg viewBox="0 0 20 20" fill="none"><rect x="1" y="6" width="2.6" height="8" rx="1" fill="#a8e0cd"/><rect x="4.9" y="3.5" width="2.6" height="13" rx="1" fill="#a8e0cd"/><rect x="12.5" y="4.5" width="2.6" height="11" rx="1" fill="#a8e0cd"/><rect x="16.4" y="7.5" width="2.6" height="5" rx="1" fill="#a8e0cd"/><rect x="8.7" y="9.1" width="2.7" height="1.8" rx=".9" fill="#e9ae84"/></svg>
       </span>
-      <strong>DementiaNet VoiceScreen</strong>
+      <b>Caesura</b>
     </a>
-    <span class="pill">Concept prototype. Not a medical device.</span>
+    <span class="spacer"></span>
+    <button class="chip" id="open-panel" aria-haspopup="dialog">For reviewers</button>
   </header>
 
-  <ol class="steps" aria-label="Progress">
-    <li id="st1" class="active"><span class="n">1</span><span class="label">Record</span></li>
-    <li id="st2"><span class="n">2</span><span class="label">Analyze</span></li>
-    <li id="st3"><span class="n">3</span><span class="label">Result</span></li>
-  </ol>
+  <main id="stage">
 
-  <main aria-live="polite">
+    <!-- ==================== START ==================== -->
+    <section class="scene sect" id="s-start">
+      <div class="hero-copy">
+        <span class="badge"><i></i>Research prototype · not a medical device</span>
+        <h1>Is a blood test for early Alzheimer's worth doing?</h1>
+        <p class="lead">Talk for one minute. Alzheimer's changes the timing of speech years before it changes the words — this check listens to <em>how</em> you speak, never to what you say, and gives you a clear answer.</p>
+      </div>
 
-    <!-- Screen 1: start -->
-    <section class="card" id="screen-start">
-      <h1>A 60 second voice check for memory health</h1>
-      <p class="lead">Speak for about one minute. The check listens to the quality of your voice, not to what you say, and tells you whether a simple follow up test is worth doing.</p>
-      <ul class="plain">
-        <li>Takes about two minutes in total.</li>
-        <li>Works with any phone or computer microphone.</li>
-        <li>In this prototype your recording never leaves your device.</li>
-      </ul>
-      <div class="btn-row two">
-        <button class="btn" id="btn-record">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
-          Record my voice
-        </button>
-        <button class="btn secondary" id="btn-upload">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7 10l5-5 5 5M4 20h16"/></svg>
-          Upload a recording
-        </button>
-        <input type="file" id="file-input" accept="audio/*" class="hidden" aria-label="Choose an audio file">
+      <div class="signal">
+        <span class="label">What it hears · illustration</span>
+        <canvas id="concept" height="96" aria-label="Illustration of speech separated by pauses"></canvas>
+        <div class="key"><span><i style="background:var(--signal)"></i>Speech</span><span><i style="background:var(--pause)"></i>Pause over 180 ms</span></div>
       </div>
-      <div class="btn-row">
-        <button class="btn quiet" id="btn-sample">Try it with a sample recording instead</button>
-      </div>
-    </section>
 
-    <!-- Screen 2: recording -->
-    <section class="card hidden" id="screen-record">
-      <h1>Please talk for about one minute</h1>
-      <div class="prompt-box">
-        <strong>A suggestion of what to talk about</strong>
-        Describe what you did yesterday, from waking up until lunch. There are no right or wrong answers, and it does not need to be interesting.
-      </div>
-      <div class="notice hidden" id="mic-notice">
-        The microphone is not available, so this prototype is simulating a recording. Nothing is being captured.
-      </div>
-      <div class="rec-area">
-        <div class="ring" role="timer" aria-label="Recording time">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
-            <circle class="track" cx="60" cy="60" r="52"/>
-            <circle class="prog" id="ring-prog" cx="60" cy="60" r="52"/>
-          </svg>
-          <div class="time"><div><span id="time-left">60</span><small>seconds left</small></div></div>
+      <div class="points">
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h3M9 7v10M13 4v16M17 8v8M20.5 11v2"/></svg></span>
+          <b>96 voice measures</b><span>Timing, pitch steadiness and voice quality. The words are never analysed.</span>
         </div>
-        <div class="wave" id="wave" aria-hidden="true"></div>
-        <p class="muted small" id="rec-status"><span class="rec-dot" aria-hidden="true"></span>Recording. Speak in your normal voice.</p>
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+          <b>Two minutes</b><span>Any phone or laptop microphone. No app, no account, no cost.</span>
+        </div>
+        <div class="point">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+          <b>A clear answer</b><span>Yes or no on a blood test — and how sure that answer is.</span>
+        </div>
       </div>
-      <div class="btn-row two">
-        <button class="btn" id="btn-stop">I am done</button>
-        <button class="btn secondary" id="btn-cancel">Cancel</button>
+
+      <div class="stack g3">
+        <div class="consent" id="consent-box">
+          <label for="consent"><input type="checkbox" id="consent"><span>My recording is sent to the analysis server, scored, and deleted in the same request. It is never stored and never linked to me.</span></label>
+        </div>
+        <div class="btns">
+          <button class="btn" id="go-rec" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+            Start the voice check
+          </button>
+          <button class="btn" data-v="quiet" id="go-file" disabled>Or analyse an audio file instead</button>
+          <input type="file" id="file" accept="audio/*" class="hide" aria-label="Choose an audio file">
+        </div>
+        <p class="tiny" id="mic-note">Your browser will ask permission to use the microphone. Nothing is captured before you allow it.</p>
       </div>
-      <p class="small muted" style="margin-top:14px">You can stop early once you have spoken for at least 20 seconds. The check works best with the full minute.</p>
     </section>
 
-    <!-- Screen 3: analyzing -->
-    <section class="card hidden" id="screen-analyze">
-      <h1>Listening to your voice</h1>
-      <p class="lead">This takes a few seconds. The check measures how the voice sounds, not the words.</p>
-      <ol class="stages" id="stages">
-        <li><span class="ic" aria-hidden="true"></span><span>Checking the recording quality</span></li>
-        <li><span class="ic" aria-hidden="true"></span><span>Measuring voice steadiness (pitch and loudness stability)</span></li>
-        <li><span class="ic" aria-hidden="true"></span><span>Measuring voice clarity (breathiness and hoarseness)</span></li>
-        <li><span class="ic" aria-hidden="true"></span><span>Measuring speech rhythm (pauses and pace)</span></li>
-        <li><span class="ic" aria-hidden="true"></span><span>Comparing with the reference range for your age group</span></li>
+    <!-- ==================== RECORD ==================== -->
+    <section class="scene sect hide" id="s-rec">
+      <div class="stack g4">
+        <h1>Talk for about a minute</h1>
+        <div class="prompt"><span class="label">Something to talk about</span><p>Describe what you did yesterday, from waking up until lunch.</p></div>
+        <p class="fine">There is no right answer and it does not have to be interesting. Speak the way you normally would.</p>
+      </div>
+      <div class="warnbox hide" id="no-mic"><h3>No microphone available</h3><p>Nothing is being captured. Go back and choose “analyse an audio file” to run the same analysis on a recording instead.</p></div>
+      <div class="signal">
+        <span class="label">Live</span>
+        <canvas id="scope" height="140" aria-label="Live view of speech and pauses"></canvas>
+        <div class="now" aria-hidden="true"></div>
+        <div class="clock">
+          <span class="t"><span id="t-left">60</span><small>seconds left</small></span>
+          <span class="status" id="status">Listening</span>
+        </div>
+        <div class="rail"><i id="rail"></i></div>
+      </div>
+      <div class="livect">
+        <div><b class="mono" id="lc-pause">0</b><span>pauses over 180 ms</span></div>
+        <div><b class="mono" id="lc-sil">0%</b><span>time in silence</span></div>
+        <div><b class="mono" id="lc-spk">0 s</b><span>spent speaking</span></div>
+      </div>
+      <div class="btns" data-cols="2">
+        <button class="btn" id="stop" disabled>I have finished</button>
+        <button class="btn" data-v="line" id="cancel">Cancel</button>
+      </div>
+      <p class="tiny">You can stop after 20 seconds. The analysis is steadier across the full minute.</p>
+    </section>
+
+    <!-- ==================== ANALYSING ==================== -->
+    <section class="scene sect hide" id="s-ana">
+      <div class="stack g3"><h1>Analysing your speech</h1><p class="lead">This usually takes a few seconds.</p></div>
+      <ol class="steps" id="steps">
+        <li><span class="mk" aria-hidden="true"></span><span>Timing the pauses on this device</span></li>
+        <li><span class="mk" aria-hidden="true"></span><span>Sending the recording for analysis</span></li>
+        <li><span class="mk" aria-hidden="true"></span><span>Extracting 96 voice measures</span></li>
+        <li><span class="mk" aria-hidden="true"></span><span>Comparing with the study group</span></li>
       </ol>
+      <p class="tiny hide" id="ana-slow">The analysis server sleeps when idle. A first request can take up to a minute to wake it — the result will arrive.</p>
     </section>
 
-    <!-- Screen 4: result -->
-    <section class="card hidden" id="screen-result">
-      <h1>Your result</h1>
-      <p class="lead">This is a first filter, not a diagnosis. It tells you whether a simple blood test is a sensible next step.</p>
-
-      <div class="tier" id="tier">
-        <div class="kicker">Voice check result</div>
-        <h2 id="tier-title"></h2>
-        <p id="tier-text" style="margin-bottom:0"></p>
-        <div class="scale" aria-hidden="true">
-          <div id="sc-low"></div><div id="sc-mid"></div><div id="sc-high"></div>
+    <!-- ==================== RESULT ==================== -->
+    <section class="scene sect hide" id="s-res">
+      <div class="outcome" id="outcome" data-tier="none">
+        <span class="label" id="oc-eyebrow">Your result</span>
+        <h1 id="oc-h">—</h1>
+        <p class="lead" id="oc-p"></p>
+        <div class="position" id="position">
+          <div class="track"><span class="fill" id="pos-fill"></span><span class="cut" id="pos-cut" aria-hidden="true"></span><span class="you" id="pos-you" role="img" aria-label="Your position"></span></div>
+          <div class="lbls"><span>More like the control group</span><span>More like the group later diagnosed</span></div>
         </div>
-        <div class="scale-labels" aria-hidden="true"><span>Low</span><span>Moderate</span><span>Elevated</span></div>
       </div>
 
-      <h3>What the check heard</h3>
-      <ul class="indicators" id="indicators"></ul>
-
-      <div class="recommend">
-        <h3 id="rec-title"></h3>
-        <p id="rec-text"></p>
-      </div>
-
-      <p class="small muted">Voice changes have many everyday causes, including a cold, tiredness, medication, or a noisy room. A result in the moderate or elevated range is a reason to check, not a reason to worry.</p>
-
-      <div class="btn-row two">
-        <button class="btn secondary" id="btn-print">Print or save this summary</button>
-        <button class="btn" id="btn-restart">Start over</button>
-      </div>
-
-      <div class="demo">
-        <strong>Reviewer note.</strong> The result above is illustrative and was not produced by a model. Use these buttons to view each of the three outcomes.
-        <div class="chips" role="group" aria-label="Show example outcome">
-          <button class="chip" data-tier="0">Low</button>
-          <button class="chip" data-tier="1">Moderate</button>
-          <button class="chip" data-tier="2">Elevated</button>
+      <div class="stack g4" id="sure-wrap">
+        <h2>How sure is this?</h2>
+        <div class="bignums">
+          <div class="bignum"><b class="mono"><span id="cnt-auc">0</span><small>in 100</small></b><span>Shown one person from each group, the model ranks the right one higher 62 times out of 100. Guessing manages 50.</span></div>
+          <div class="bignum"><b class="mono"><span id="cnt-pct">0</span><small>th percentile</small></b><span>Your position within the study's development set. The line marks where the recommendation switches.</span></div>
         </div>
+        <p class="fine">A real signal, and a weak one. Results on the wrong side of the line are common in both groups — which is exactly why this is a filter for a blood test, not a diagnosis.</p>
+      </div>
+
+      <div class="next" id="next">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <div><h3 id="next-h">What to do next</h3><p id="next-p"></p></div>
+      </div>
+
+      <div class="signal">
+        <span class="label" id="tl-label">Your recording</span>
+        <canvas id="tl" height="96" aria-label="Timeline of speech and pauses across the recording"></canvas>
+        <div class="tlaxis"><span>0 s</span><span id="tl-mid">—</span><span id="tl-end">—</span></div>
+      </div>
+      <p class="fine" id="tl-sub"></p>
+
+      <div class="stack g4 hide" id="realcases">
+        <div class="stack g2">
+          <h2>What the model does on real people</h2>
+          <p class="fine" id="cases-sub"></p>
+        </div>
+        <div class="cases" id="cases-list"></div>
+        <div class="caselegend">
+          <span><i style="background:var(--forest)"></i>Model said: no blood test</span>
+          <span><i style="background:var(--pause-deep)"></i>Model said: blood test</span>
+          <span>✗ marks the ones it got wrong</span>
+        </div>
+        <p class="tiny" id="cases-note"></p>
+      </div>
+
+      <div>
+        <details class="row">
+          <summary>The eight timing measures</summary>
+          <div>
+            <div class="grid2" id="cells"></div>
+            <p class="tiny" id="cells-note"></p>
+          </div>
+        </details>
+        <details class="row">
+          <summary>How this was computed</summary>
+          <div>
+            <p class="fine">Speech is separated from silence at 35 dB below the recording's peak, matching <span class="mono">librosa.effects.split(top_db=35)</span> in the pipeline, with 128 ms windows at a 32 ms hop. Gaps between speech runs are pauses, split at 180 ms after He et al. (2025). Rates divide by voiced seconds, not clip length — clip length was a collection artefact and is excluded from the model.</p>
+            <p class="fine">The server adds 88 eGeMAPS voice-quality features via openSMILE, standardises all 96 against the training data, and passes them to the SVM chosen in the study. The result is where that score falls among the development-set recordings — a percentile, not a probability. The model was fitted without probability calibration, and inventing one afterwards would be a number nobody validated.</p>
+            <p class="fine" id="model-meta"></p>
+          </div>
+        </details>
+      </div>
+
+      <p class="tiny"><strong>If you are worried about your memory, talk to your doctor.</strong> This is a research prototype and not a medical device. It does not diagnose and must not be used to make health decisions on its own.</p>
+      <div class="btns" data-cols="2">
+        <button class="btn" data-v="line" id="print">Save or print</button>
+        <button class="btn" id="again">Start again</button>
       </div>
     </section>
-
-    <!-- About and funnel -->
-    <section class="about">
-      <h2>Where the voice check fits</h2>
-      <p class="muted">Speech is not the diagnosis. It is the cheap first step that decides who needs the expensive tests, so that early diagnosis becomes affordable for everyone over 55.</p>
-      <div class="funnel">
-        <div class="stage first">
-          <div class="k">Step 0</div>
-          <strong>60 second voice check</strong>
-          <span>Any phone, near zero cost, everyone 55 and over.</span>
-        </div>
-        <div class="stage">
-          <div class="k">Step 1</div>
-          <strong>Blood test (plasma p-Tau217)</strong>
-          <span>Only for those flagged by voice. Targeted and much cheaper than imaging.</span>
-        </div>
-        <div class="stage">
-          <div class="k">Step 2</div>
-          <strong>PET scan or specialist</strong>
-          <span>Reserved for the few with a positive blood test.</span>
-        </div>
-        <div class="stage">
-          <div class="k">Step 3</div>
-          <strong>Treatment in the window</strong>
-          <span>New disease modifying drugs work best when started early.</span>
-        </div>
-      </div>
-
-      <h2 style="margin-top:28px">What the evidence looks like so far</h2>
-      <p class="muted">A weekend proof of concept on public speech data, evaluated on a locked test set that was opened once. The numbers are modest and reported as they are.</p>
-      <div class="facts">
-        <div class="fact"><b>0.62</b><span>AUC on the locked test set, speaker level split (0.5 is chance)</span></div>
-        <div class="fact"><b>344</b><span>clips from 171 speakers, real spontaneous speech</span></div>
-        <div class="fact"><b>Voice quality</b><span>carries the signal. Pause timing is weak, filled pauses add nothing</span></div>
-      </div>
-      <p class="small muted" style="margin-top:14px">Two tempting results were rejected on the way: a flashier model that overfit (0.61 in cross validation, 0.42 on the test set) and an early detection curve that did not hold up. Full code, tables and limitations are in the <a href="https://github.com/ct-s/dementianet-voicescreen">GitHub repository</a>.</p>
-    </section>
-
   </main>
 
-  <footer>
-    <p><strong>Concept prototype. Not a medical device.</strong> This page demonstrates a product idea with illustrative data. It does not analyze audio, does not store anything, and must not be used to make health decisions. If you are worried about your memory, please talk to your doctor.</p>
-    <p>DementiaNet VoiceScreen is an open research proof of concept, MIT licensed. <a href="https://github.com/ct-s/dementianet-voicescreen">Source and results on GitHub</a>.</p>
+  <footer class="stack g2">
+    <p class="tiny">Built on <a href="https://github.com/ct-s/dementianet-voicescreen">dementianet-voicescreen</a> by Constantin Sorge, MIT licensed. Study data: <a href="https://github.com/shreyasgite/dementianet">DementiaNet</a>. Research prototype — not a medical device.</p>
   </footer>
 </div>
+
+<!-- ==================== REVIEWER PANEL ==================== -->
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-label="Evidence for reviewers" tabindex="-1">
+  <div class="panel-head">
+    <h2>What the evidence supports</h2>
+    <button class="xbtn" id="close-panel" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="panel-body">
+    <div class="stack g3">
+      <p class="fine">A weekend proof of concept on 344 clips from 171 speakers of public interview audio. Split by speaker, so nobody appears in both training and test. The locked test set was opened once.</p>
+      <div class="stats">
+        <div class="stat"><b>0.617</b><span>AUC, locked test set. Chance is 0.500.</span></div>
+        <div class="stat"><b>171</b><span>Speakers, speaker-level split</span></div>
+        <div class="stat"><b>1×</b><span>Times the test set was opened</span></div>
+      </div>
+    </div>
+    <div class="stack g3">
+      <h3>Where the signal sits</h3>
+      <table class="tbl">
+        <thead><tr><th>Feature set</th><th>n</th><th>CV AUC</th></tr></thead>
+        <tbody>
+          <tr data-hi="1"><td>Pause timing + voice quality</td><td class="v">96</td><td class="v">0.619</td></tr>
+          <tr><td>Voice quality only</td><td class="v">88</td><td class="v">0.610</td></tr>
+          <tr><td>Pause timing only</td><td class="v">8</td><td class="v">0.536</td></tr>
+          <tr><td>Filled pauses only (“uh”, “um”)</td><td class="v">4</td><td class="v">0.484</td></tr>
+        </tbody>
+      </table>
+      <p class="fine">The highlighted row is the model this product runs. Voice quality carries the signal; pause timing alone is barely above chance, which is why the on-device measurement is shown as a measurement and the recommendation comes only from the full model.</p>
+    </div>
+    <div class="stack g3">
+      <h3>Why a yes/no and not a percentage</h3>
+      <p class="fine">At AUC 0.62 a personal probability would be noise with a decimal point. Screening tools that work — mammography recall, PSA thresholds — report an action and its error rate, not a likelihood. The line on the result is a product decision: it flags the top third of the development-set distribution. It is not a validated clinical cut-off, and the page says so.</p>
+    </div>
+    <div class="stack g3">
+      <h3>Two results we threw away</h3>
+      <div class="kill"><b>A better-looking model that was cheating</b><p class="fine">Gradient boosting led in cross-validation at <span class="mono">0.605</span>, then scored <span class="mono">0.417</span> on the locked test set — worse than chance. It had memorised individual speakers. Dropped.</p></div>
+      <div class="kill"><b>An early-detection curve that was not real</b><p class="fine">An earlier model showed signal rising through the decade before diagnosis — exactly the story a pitch wants. Under the model that generalises it flattened: <span class="mono">0.577</span> at 0–5 years, <span class="mono">0.596</span> at 5–10, <span class="mono">0.405</span> at 10–15. No longer claimed.</p></div>
+    </div>
+    <div class="stack g3">
+      <h3>Where a voice check would sit</h3>
+      <div class="chain">
+        <div class="link" data-here="1"><span class="t">Tier 0</span><span><b>60-second voice check</b><span>Any phone, near-zero marginal cost, everyone 55 and over.</span></span></div>
+        <div class="link"><span class="t">Tier 1</span><span><b>Plasma p-Tau217</b><span>Blood draw, only for those the voice check flags.</span></span></div>
+        <div class="link"><span class="t">Tier 2</span><span><b>PET or specialist</b><span>Reserved for the few with a positive blood test.</span></span></div>
+        <div class="link"><span class="t">Tier 3</span><span><b>Treatment in the window</b><span>Disease-modifying drugs work best started early.</span></span></div>
+      </div>
+    </div>
+    <div class="stack g3">
+      <h3>Known limitations</h3>
+      <ul class="lim">
+        <li>0.62 AUC is a proof of concept. Published systems using controlled speech tasks reach 0.77–0.93. That gap is the roadmap.</li>
+        <li>Celebrity interview audio is noisy and edited. Diagnoses are public record, not biomarker-confirmed.</li>
+        <li>English-dominant, with no fairness testing across demographics yet.</li>
+        <li>Not a medical device. No regulatory clearance of any kind.</li>
+      </ul>
+    </div>
+    <p class="tiny">Full code, result tables and limitations: <a href="https://github.com/ct-s/dementianet-voicescreen">github.com/ct-s/dementianet-voicescreen</a></p>
+  </div>
+</aside>
 
 <script>
 (function () {
   "use strict";
 
+  /* ------------------------------------------------------------------
+     CONFIGURE ME. The URL of the inference service (see HANDOFF.md).
+     Example: var API_BASE = "https://caesura-api.onrender.com";
+     With "" the page still runs, measures on-device, and says plainly
+     that the model is not connected. It never fakes a result.
+     ------------------------------------------------------------------ */
+  var API_BASE = "";
+
   var $ = function (id) { return document.getElementById(id); };
-  var screens = ["screen-start", "screen-record", "screen-analyze", "screen-result"];
-  var DURATION = 60;
-  var MIN_SECONDS = 20;
+  var SCENES = ["s-start", "s-rec", "s-ana", "s-res"];
+  var LIMIT = 60, FLOOR = 20, TOP_DB = 35, PAUSE_MS = 180, MIN_PAUSE = PAUSE_MS / 1000;
+  var WIN_S = 0.128, HOP = 0.032;   /* librosa.effects.split defaults at 16 kHz */
+  var API = API_BASE.replace(/\/+$/, "");
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var C = { wave: "#a8e0cd", pause: "#e9ae84", dim: "rgba(255,255,255,.16)", bg: "#16302e" };
 
-  var state = {
-    timer: null,
-    left: DURATION,
-    stream: null,
-    audioCtx: null,
-    analyser: null,
-    raf: null,
-    seed: 0
-  };
+  var S = { timer: null, left: LIMIT, stream: null, ctx: null, an: null, raf: null, env: [], peak: 0,
+            rec: null, chunks: [], blob: null, m: null, result: null, ambient: null };
 
-  function show(id, step) {
-    screens.forEach(function (s) { $(s).classList.toggle("hidden", s !== id); });
-    [1, 2, 3].forEach(function (i) {
-      var li = $("st" + i);
-      li.classList.toggle("active", i === step);
-      li.classList.toggle("done", i < step);
-    });
-    var h = $(id).querySelector("h1");
-    if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function scene(id) {
+    SCENES.forEach(function (s) { var el = $(s), on = s === id; el.classList.toggle("hide", !on);
+      if (on && !reduced) { el.classList.remove("scene"); void el.offsetWidth; el.classList.add("scene"); } });
+    var h = $(id).querySelector("h1, h2"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    if (id !== "s-start") { stopAmbient(); } else { startAmbient(); }
+  }
+  function fit(c, h) {
+    var dpr = window.devicePixelRatio || 1, w = c.clientWidth;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.fillStyle = C.bg; g.fillRect(0, 0, w, h);
+    return { g: g, w: w, h: h };
   }
 
-  /* Waveform bars */
-  var wave = $("wave");
-  var BARS = 28;
-  for (var i = 0; i < BARS; i++) { wave.appendChild(document.createElement("i")); }
-  var bars = wave.children;
-
-  function drawWave(levels) {
-    for (var i = 0; i < BARS; i++) {
-      var v = levels ? levels[i] : 0.15 + Math.random() * 0.6;
-      bars[i].style.height = Math.max(6, Math.round(v * 56)) + "px";
+  /* ---- ambient hero: an illustration that breathes. Never data. ---- */
+  var SEG = [[0.6,1],[0.10,0],[0.9,1],[0.07,0],[1.4,1],[0.34,0],[0.7,1],[0.09,0],[1.1,1],[0.46,0],[0.5,1],[0.11,0],[1.3,1],[0.26,0],[0.8,1],[0.08,0],[1.0,1],[0.3,0],[0.7,1]];
+  function drawConcept(t) {
+    var c = $("concept"); if (!c || c.offsetParent === null) { return; }
+    var d = fit(c, 96), total = 0, i;
+    for (i = 0; i < SEG.length; i++) { total += SEG[i][0]; }
+    var x = 0, mid = d.h / 2, bar = 3, gapp = 2;
+    for (i = 0; i < SEG.length; i++) {
+      var seg = SEG[i], w = (seg[0] / total) * d.w;
+      if (seg[1]) {
+        var n = Math.max(1, Math.floor(w / (bar + gapp)));
+        for (var k = 0; k < n; k++) {
+          var ph = (i * 1.7 + k * 0.55), amp = 0.35 + 0.65 * Math.abs(Math.sin(ph + t * 0.0016)) * (0.5 + 0.5 * Math.sin(k * 0.9 + i));
+          var hh = Math.max(4, amp * (d.h - 24));
+          d.g.fillStyle = C.wave; d.g.fillRect(x + k * (bar + gapp), mid - hh / 2, bar, hh);
+        }
+      } else if (seg[0] >= MIN_PAUSE) { d.g.fillStyle = C.pause; d.g.fillRect(x, 12, Math.max(3, w), d.h - 24); }
+      else { d.g.fillStyle = C.dim; d.g.fillRect(x, mid - 1, Math.max(1, w), 2); }
+      x += w;
     }
   }
+  function startAmbient() {
+    stopAmbient();
+    if (reduced) { drawConcept(0); return; }
+    function loop(ts) { drawConcept(ts); S.ambient = requestAnimationFrame(loop); }
+    S.ambient = requestAnimationFrame(loop);
+  }
+  function stopAmbient() { if (S.ambient) { cancelAnimationFrame(S.ambient); S.ambient = null; } }
 
-  function startLiveWave() {
-    var data = new Uint8Array(state.analyser.frequencyBinCount);
-    function loop() {
-      state.analyser.getByteFrequencyData(data);
-      var levels = [];
-      var stepSize = Math.max(1, Math.floor(data.length / 2 / BARS));
-      for (var i = 0; i < BARS; i++) {
-        var sum = 0;
-        for (var j = 0; j < stepSize; j++) { sum += data[i * stepSize + j]; }
-        levels.push(Math.min(1, (sum / stepSize) / 160));
-      }
-      drawWave(levels);
-      state.raf = requestAnimationFrame(loop);
+  /* ---- WAV encoding ----
+     The server accepts 16 kHz mono WAV and nothing else. Encoding it here
+     means the server needs no ffmpeg, which is what lets it run on a plain
+     Python host with no container. ~1.9 MB for a full minute. */
+  function encodeWav(samples, rate) {
+    var n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    function str(off, s) { for (var i = 0; i < s.length; i++) { v.setUint8(off + i, s.charCodeAt(i)); } }
+    str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVEfmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, "data"); v.setUint32(40, n * 2, true);
+    for (var i = 0; i < n; i++) {
+      var s = Math.max(-1, Math.min(1, samples[i]));
+      v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
     }
-    loop();
+    return new Blob([buf], { type: "audio/wav" });
   }
 
-  function startFakeWave() {
-    function loop() { drawWave(null); state.raf = setTimeout(loop, 120); }
-    loop();
-  }
-
-  function stopWave() {
-    if (state.raf) { cancelAnimationFrame(state.raf); clearTimeout(state.raf); state.raf = null; }
-    for (var i = 0; i < BARS; i++) { bars[i].style.height = "8px"; }
-  }
-
-  /* Recording */
-  var ringProg = $("ring-prog");
-  var CIRC = 2 * Math.PI * 52;
-  ringProg.style.strokeDasharray = CIRC;
-
-  function setTime(left) {
-    state.left = left;
-    $("time-left").textContent = left;
-    ringProg.style.strokeDashoffset = CIRC * (left / DURATION);
-    $("btn-stop").disabled = (DURATION - left) < MIN_SECONDS;
-  }
-
-  function beginRecording() {
-    show("screen-record", 1);
-    setTime(DURATION);
-    $("mic-notice").classList.add("hidden");
-    var media = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
-    var start = function (live) {
-      if (live) { startLiveWave(); } else { $("mic-notice").classList.remove("hidden"); startFakeWave(); }
-      state.timer = setInterval(function () {
-        setTime(state.left - 1);
-        if (state.left <= 0) { finishRecording(); }
-      }, 1000);
-    };
-    if (!media) { start(false); return; }
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-      state.stream = stream;
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      state.audioCtx = new Ctx();
-      state.analyser = state.audioCtx.createAnalyser();
-      state.analyser.fftSize = 256;
-      state.audioCtx.createMediaStreamSource(stream).connect(state.analyser);
-      start(true);
-    }).catch(function () { start(false); });
-  }
-
-  function teardownRecording() {
-    clearInterval(state.timer); state.timer = null;
-    stopWave();
-    if (state.stream) { state.stream.getTracks().forEach(function (t) { t.stop(); }); state.stream = null; }
-    if (state.audioCtx) { state.audioCtx.close(); state.audioCtx = null; state.analyser = null; }
-  }
-
-  function finishRecording() {
-    var spoken = DURATION - state.left;
-    teardownRecording();
-    state.seed = spoken * 7 + Date.now() % 97;
-    analyze();
-  }
-
-  /* Analyzing */
-  function analyze() {
-    show("screen-analyze", 2);
-    var items = $("stages").children;
-    for (var i = 0; i < items.length; i++) {
-      items[i].className = "";
-      items[i].querySelector(".ic").innerHTML = "";
+  /* AudioBuffer -> mono Float32Array at TARGET_SR. OfflineAudioContext does a
+     proper resample; a few browsers refuse non-native rates, so fall back to
+     linear interpolation rather than failing the whole analysis. */
+  var TARGET_SR = 16000;
+  function toMono16k(buf) {
+    if (buf.sampleRate === TARGET_SR && buf.numberOfChannels === 1) {
+      return Promise.resolve(buf.getChannelData(0));
     }
-    var idx = 0;
-    function next() {
-      if (idx > 0) {
-        items[idx - 1].className = "done";
-        items[idx - 1].querySelector(".ic").innerHTML =
-          '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
-      }
-      if (idx >= items.length) { showResult(pickTier()); return; }
-      items[idx].className = "running";
-      idx++;
-      setTimeout(next, 700 + Math.round(Math.random() * 500));
+    var Off = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (Off) {
+      try {
+        var len = Math.max(1, Math.ceil(buf.duration * TARGET_SR));
+        var oc = new Off(1, len, TARGET_SR);
+        var src = oc.createBufferSource();
+        src.buffer = buf; src.connect(oc.destination); src.start();
+        return oc.startRendering().then(function (out) { return out.getChannelData(0); })
+          .catch(function () { return linear16k(buf); });
+      } catch (e) { /* fall through */ }
     }
-    setTimeout(next, 300);
+    return Promise.resolve(linear16k(buf));
+  }
+  function linear16k(buf) {
+    var ch = buf.getChannelData(0), ratio = buf.sampleRate / TARGET_SR;
+    var out = new Float32Array(Math.floor(ch.length / ratio));
+    for (var i = 0; i < out.length; i++) {
+      var p = i * ratio, i0 = Math.floor(p), f = p - i0;
+      out[i] = ch[i0] * (1 - f) + (ch[Math.min(i0 + 1, ch.length - 1)] || 0) * f;
+    }
+    return out;
   }
 
-  function pickTier() {
-    /* Illustrative only: the tier is chosen from a seed, not from the audio. */
-    var r = Math.abs(Math.sin(state.seed)) ;
-    return r < 0.45 ? 0 : (r < 0.8 ? 1 : 2);
+  /* Envelope straight from decoded samples, so the numbers the page shows come
+     from exactly the audio the server scores. */
+  function envelopeOf(samples, rate) {
+    var win = Math.round(rate * WIN_S), hop = Math.round(rate * HOP), env = [];
+    for (var i = 0; i + win <= samples.length; i += hop) {
+      var s = 0;
+      for (var j = 0; j < win; j++) { s += samples[i + j] * samples[i + j]; }
+      env.push(Math.sqrt(s / win));
+    }
+    return env;
   }
 
-  /* Result content */
-  var TIERS = [
-    {
-      cls: "low",
-      title: "Low: your voice sounds within the typical range",
-      text: "Voice steadiness, clarity and rhythm all fell inside the range we see in people your age without memory problems.",
-      recTitle: "Recommendation: no further test needed now",
-      recText: "Repeat the voice check in about a year, or sooner if you or your family notice changes in memory or speech. A low result does not rule out problems, so please still talk to your doctor if you are concerned.",
-      ind: [
-        ["Voice steadiness", 0.42, "ok", "Typical", "How evenly your pitch and loudness hold from one moment to the next (jitter and shimmer)."],
-        ["Voice clarity", 0.5, "ok", "Typical", "How clear the voice sounds compared with breathy or hoarse noise (harmonics to noise ratio)."],
-        ["Speech rhythm", 0.46, "ok", "Typical", "Pace of speaking and the length and number of pauses."]
-      ]
-    },
-    {
-      cls: "mid",
-      title: "Moderate: a few voice measures sit outside the typical range",
-      text: "Your speech rhythm was typical, but voice steadiness and clarity were slightly outside the range we usually see. This pattern is worth checking with a simple test.",
-      recTitle: "Recommendation: arrange a blood test",
-      recText: "We suggest a plasma p-Tau217 blood test through your doctor. It is a standard blood draw that can confirm or, more often, rule out early Alzheimer's changes. Bring this summary to the appointment.",
-      ind: [
-        ["Voice steadiness", 0.78, "warn", "Slightly outside", "Pitch and loudness varied a little more from moment to moment than is typical (jitter and shimmer)."],
-        ["Voice clarity", 0.74, "warn", "Slightly outside", "The voice carried a little more breathy noise than typical (harmonics to noise ratio)."],
-        ["Speech rhythm", 0.52, "ok", "Typical", "Pace of speaking and the length and number of pauses."]
-      ]
-    },
-    {
-      cls: "high",
-      title: "Elevated: several voice measures sit outside the typical range",
-      text: "Voice steadiness and clarity were clearly outside the range we see in people your age without memory problems, and speech rhythm was slightly outside it. This is a reason to check, not a diagnosis.",
-      recTitle: "Recommendation: arrange a blood test soon",
-      recText: "We suggest a plasma p-Tau217 blood test through your doctor within the next few weeks. Only a blood test, and if needed a specialist, can tell whether these voice changes are related to memory health or to something everyday such as a cold or tiredness.",
-      ind: [
-        ["Voice steadiness", 0.92, "bad", "Outside", "Pitch and loudness varied noticeably more from moment to moment than is typical (jitter and shimmer)."],
-        ["Voice clarity", 0.88, "bad", "Outside", "The voice carried noticeably more breathy noise than typical (harmonics to noise ratio)."],
-        ["Speech rhythm", 0.7, "warn", "Slightly outside", "Slightly slower pace and a few longer pauses than typical."]
-      ]
-    }
-  ];
-
-  function showResult(t) {
-    var d = TIERS[t];
-    var tier = $("tier");
-    tier.className = "tier " + d.cls;
-    $("tier-title").textContent = d.title;
-    $("tier-text").textContent = d.text;
-    ["low", "mid", "high"].forEach(function (c, i) {
-      $("sc-" + c).className = i <= t ? "on " + d.cls : "";
-    });
-    var list = $("indicators");
-    list.innerHTML = "";
-    d.ind.forEach(function (row) {
-      var li = document.createElement("li");
-      li.innerHTML =
-        '<div class="ind-head"><strong></strong><span class="tag"></span></div>' +
-        '<div class="bar" aria-hidden="true"><div class="range"></div><div class="dot"></div></div>' +
-        '<p class="ind-note"></p>';
-      li.querySelector("strong").textContent = row[0];
-      var tag = li.querySelector(".tag");
-      tag.className = "tag " + row[2];
-      tag.textContent = row[3];
-      li.querySelector(".dot").style.left = Math.round(row[1] * 100) + "%";
-      li.querySelector(".ind-note").textContent = row[4];
-      list.appendChild(li);
-    });
-    $("rec-title").textContent = d.recTitle;
-    $("rec-text").textContent = d.recText;
-    var chips = document.querySelectorAll(".chip");
-    for (var i = 0; i < chips.length; i++) {
-      chips[i].setAttribute("aria-pressed", String(i === t));
-    }
-    show("screen-result", 3);
+  function decodeBlob(blob) {
+    var Ctx = window.AudioContext || window.webkitAudioContext, ctx = new Ctx();
+    return blob.arrayBuffer()
+      .then(function (ab) { return ctx.decodeAudioData(ab); })
+      .then(function (buf) { try { ctx.close(); } catch (e) { /* closed */ } return buf; })
+      .catch(function (err) { try { ctx.close(); } catch (e) { /* closed */ } throw err; });
   }
 
-  /* Wiring */
-  $("btn-record").addEventListener("click", beginRecording);
-  $("btn-upload").addEventListener("click", function () { $("file-input").click(); });
-  $("file-input").addEventListener("change", function (e) {
-    var f = e.target.files && e.target.files[0];
-    if (!f) { return; }
-    state.seed = (f.size % 1000) + f.name.length;
-    e.target.value = "";
-    analyze();
+  /* ---- measurement: port of features/pauses.py ---- */
+  function measure(env, hop) {
+    var n = env.length, i; if (!n) { return null; }
+    var peak = 0; for (i = 0; i < n; i++) { if (env[i] > peak) { peak = env[i]; } }
+    if (peak <= 0) { return null; }
+    var cut = peak * Math.pow(10, -TOP_DB / 20), iv = [], run = null;
+    for (i = 0; i < n; i++) { if (env[i] >= cut && run === null) { run = i; } else if (env[i] < cut && run !== null) { iv.push([run, i]); run = null; } }
+    if (run !== null) { iv.push([run, n]); }
+    if (!iv.length) { return null; }
+    var gaps = []; for (i = 0; i < iv.length - 1; i++) { gaps.push((iv[i + 1][0] - iv[i][1]) * hop); }
+    var voiced = 0; for (i = 0; i < iv.length; i++) { voiced += (iv[i][1] - iv[i][0]) * hop; }
+    var dur = n * hop, lng = gaps.filter(function (g) { return g >= MIN_PAUSE; }), sht = gaps.filter(function (g) { return g < MIN_PAUSE; });
+    var mean = gaps.length ? gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length : 0;
+    var sd = gaps.length ? Math.sqrt(gaps.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / gaps.length) : 0;
+    return { duration_s: dur, voiced_s: voiced, psd: (dur - voiced) / dur, pause_rate: gaps.length / dur, long_pause_rate: lng.length / dur,
+      short_pause_rate: sht.length / dur, mean_pause_s: mean, std_pause_s: sd, long_pause_ratio: gaps.length ? lng.length / gaps.length : 0,
+      articulation_rate: voiced ? iv.length / voiced : 0, n_long: lng.length, _iv: iv, _n: n, _hop: hop };
+  }
+
+  /* ---- live scope ---- */
+  var WINDOW_S = 9;
+  function drawScope() {
+    var c = $("scope"); if (!c) { return; }
+    var d = fit(c, 140), frames = Math.round(WINDOW_S / HOP), start = Math.max(0, S.env.length - frames), slice = S.env.slice(start);
+    if (!slice.length) { return; }
+    var cut = S.peak > 0 ? S.peak * Math.pow(10, -TOP_DB / 20) : Infinity, px = d.w / frames, mid = d.h / 2, i = 0;
+    while (i < slice.length) {
+      if (slice[i] < cut) { var j = i; while (j < slice.length && slice[j] < cut) { j++; } var secs = (j - i) * HOP;
+        if (secs >= MIN_PAUSE) { d.g.fillStyle = C.pause; d.g.fillRect(i * px, 10, Math.max(3, (j - i) * px), d.h - 20); }
+        else { d.g.fillStyle = C.dim; d.g.fillRect(i * px, mid - 1, Math.max(1, (j - i) * px), 2); } i = j; } else { i++; }
+    }
+    d.g.fillStyle = C.wave;
+    for (i = 0; i < slice.length; i++) { if (slice[i] >= cut) { var v = Math.min(1, slice[i] / S.peak), h2 = Math.max(4, v * (d.h - 20)); d.g.fillRect(i * px, mid - h2 / 2, Math.max(1.5, px - 0.6), h2); } }
+  }
+  function liveCounters() {
+    var m = measure(S.env, HOP); if (!m) { return; }
+    $("lc-pause").textContent = m.n_long; $("lc-sil").textContent = Math.round(m.psd * 100) + "%"; $("lc-spk").textContent = m.voiced_s.toFixed(0) + " s";
+    var quiet = S.env.length && S.peak > 0 && S.env[S.env.length - 1] < S.peak * Math.pow(10, -TOP_DB / 20);
+    var st = $("status"); st.setAttribute("data-quiet", quiet ? "1" : "0"); st.textContent = quiet ? "Pause" : "Listening";
+  }
+
+  /* ---- result timeline ---- */
+  function drawTimeline() {
+    var c = $("tl"), m = S.m; if (!c || !m) { return; }
+    var d = fit(c, 96), px = d.w / m._n, mid = d.h / 2, iv = m._iv, k;
+    for (k = 0; k < iv.length - 1; k++) { var a = iv[k][1], b = iv[k + 1][0], secs = (b - a) * m._hop;
+      if (secs >= MIN_PAUSE) { d.g.fillStyle = C.pause; d.g.fillRect(a * px, 10, Math.max(3, (b - a) * px), d.h - 20); }
+      else { d.g.fillStyle = C.dim; d.g.fillRect(a * px, mid - 1, Math.max(1, (b - a) * px), 2); } }
+    d.g.fillStyle = C.wave;
+    for (k = 0; k < iv.length; k++) { d.g.fillRect(iv[k][0] * px, 10, Math.max(1.5, (iv[k][1] - iv[k][0]) * px), d.h - 20); }
+    $("tl-mid").textContent = (m.duration_s / 2).toFixed(0) + " s"; $("tl-end").textContent = m.duration_s.toFixed(0) + " s";
+  }
+  window.addEventListener("resize", function () {
+    if (!$("s-start").classList.contains("hide") && reduced) { drawConcept(0); }
+    if (!$("s-rec").classList.contains("hide")) { drawScope(); }
+    if (!$("s-res").classList.contains("hide")) { drawTimeline(); placeYou(false); }
   });
-  $("btn-sample").addEventListener("click", function () { state.seed = 0.7; analyze(); });
-  $("btn-stop").addEventListener("click", finishRecording);
-  $("btn-cancel").addEventListener("click", function () { teardownRecording(); show("screen-start", 1); });
-  $("btn-restart").addEventListener("click", function () { show("screen-start", 1); });
-  $("brand").addEventListener("click", function (e) { e.preventDefault(); teardownRecording(); show("screen-start", 1); });
-  $("btn-print").addEventListener("click", function () { window.print(); });
-  var chips = document.querySelectorAll(".chip");
-  for (var i = 0; i < chips.length; i++) {
-    chips[i].addEventListener("click", function () { showResult(Number(this.getAttribute("data-tier"))); });
+
+  /* ---- count-up ---- */
+  function countUp(el, to, ms, suffix) {
+    if (reduced) { el.textContent = to + (suffix || ""); return; }
+    var t0 = null;
+    function step(ts) { if (!t0) { t0 = ts; } var p = Math.min(1, (ts - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(to * e) + (suffix || ""); if (p < 1) { requestAnimationFrame(step); } }
+    requestAnimationFrame(step);
   }
+
+  /* ---- analysing steps ---- */
+  function stepState(i, s) { var li = $("steps").children[i]; li.setAttribute("data-s", s);
+    li.querySelector(".mk").innerHTML = s === "ok" ? '<svg viewBox="0 0 24 24" fill="none" stroke="#a8e0cd" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ""; }
+  function resetSteps() { for (var i = 0; i < 4; i++) { $("steps").children[i].removeAttribute("data-s"); $("steps").children[i].querySelector(".mk").innerHTML = ""; } $("ana-slow").classList.add("hide"); }
+
+  /* ---- outcome ---- */
+  var CELLS = [
+    ["Silence share", "psd", function (v) { return (v * 100).toFixed(1) + " %"; }, "Proportion of the recording spent not speaking."],
+    ["Articulation rate", "articulation_rate", function (v) { return v.toFixed(2) + " /s"; }, "Speech runs per second of speaking. Highest permutation importance in the study."],
+    ["Pause rate", "pause_rate", function (v) { return v.toFixed(2) + " /s"; }, "Pauses per second, any length. Second highest importance."],
+    ["Long-pause rate", "long_pause_rate", function (v) { return v.toFixed(2) + " /s"; }, "Pauses of 180 ms or more, per second."],
+    ["Short-pause rate", "short_pause_rate", function (v) { return v.toFixed(2) + " /s"; }, "Pauses under 180 ms, per second."],
+    ["Mean pause", "mean_pause_s", function (v) { return v.toFixed(3) + " s"; }, "Average length of a silent gap."],
+    ["Pause variability", "std_pause_s", function (v) { return v.toFixed(3) + " s"; }, "How much pause length varies."],
+    ["Long-pause share", "long_pause_ratio", function (v) { return (v * 100).toFixed(1) + " %"; }, "Share of all pauses crossing 180 ms."]
+  ];
+  function placeYou(animate) {
+    var r = S.result; if (!r) { return; }
+    var x = Math.min(0.985, Math.max(0.015, r.score));
+    $("pos-cut").style.left = (r.cut * 100) + "%";
+    if (animate && !reduced) { $("pos-you").style.left = "1.5%"; $("pos-fill").style.width = "0%";
+      requestAnimationFrame(function () { requestAnimationFrame(function () { $("pos-you").style.left = (x * 100) + "%"; $("pos-fill").style.width = (x * 100) + "%"; }); }); }
+    else { $("pos-you").style.left = (x * 100) + "%"; $("pos-fill").style.width = (x * 100) + "%"; }
+  }
+
+  function render(m, r) {
+    S.m = m; S.result = r;
+    var oc = $("outcome");
+    if (r) {
+      var el = r.tier === "elevated";
+      oc.setAttribute("data-tier", el ? "elevated" : "typical");
+      $("oc-eyebrow").textContent = "Your result";
+      $("oc-h").textContent = el ? "Yes — a blood test is worth doing" : "No — not at this point";
+      $("oc-p").textContent = el
+        ? "Your speech pattern sits closer to the group in the study who were later diagnosed than to the control group. That is a reason to arrange a simple blood test, not a reason to worry: most people on this side of the line do not have Alzheimer's."
+        : "Your speech pattern sits closer to the study's control group than to the group who were later diagnosed. This does not rule anything out — it means a blood test is not the sensible next step today.";
+      $("position").classList.remove("hide"); $("sure-wrap").classList.remove("hide");
+      $("next-h").textContent = el ? "Arrange a plasma p-Tau217 blood test" : "Repeat this check in a year";
+      $("next-p").textContent = el
+        ? "Ask your GP for a plasma p-Tau217 test — a standard blood draw that confirms or, far more often, rules out early Alzheimer's changes. Bring this page. Voice timing also shifts with a cold, tiredness or a noisy room, so a repeat check on another day is reasonable first."
+        : "Do the check again in about a year, or sooner if you or your family notice changes in memory, word-finding or speech. If you are worried now, talk to your doctor regardless of this result.";
+      var meta = r.model || {};
+      $("model-meta").textContent = "Model export " + (meta.git_rev ? "at commit " + meta.git_rev + " " : "") + (meta.exported_at ? "on " + String(meta.exported_at).slice(0, 10) + ", " : "") + (meta.n_dev_clips ? "fitted on " + meta.n_dev_clips + " development clips." : "");
+      $("tl-sub").textContent = "Timing computed on this device; the server's own values, used for the result, agree to within the frame hop.";
+    } else if (API) {
+      /* A server was configured but did not answer. */
+      oc.setAttribute("data-tier", "none");
+      $("oc-eyebrow").textContent = "No result";
+      $("oc-h").textContent = "The analysis server did not answer";
+      $("oc-p").textContent = "Your speech was measured on this device, but the full model could not be "
+        + "reached, so there is no recommendation. Nothing was kept. Try again in a minute.";
+      $("position").classList.add("hide"); $("sure-wrap").classList.add("hide");
+      $("next-h").textContent = "If you are worried about your memory";
+      $("next-p").textContent = "Talk to your doctor. This prototype cannot tell you anything on its own today.";
+      $("model-meta").textContent = "";
+      $("tl-sub").textContent = "Computed here on your device from a loudness envelope. No audio left this device.";
+    } else {
+      /* Static build. The timing measurement is real and complete; the model
+         is not here. Lead with what WAS measured rather than with an absence. */
+      oc.setAttribute("data-tier", "none");
+      $("oc-eyebrow").textContent = "Your recording";
+      $("oc-h").textContent = m.n_long === 1
+        ? "1 pause over 180 milliseconds"
+        : m.n_long + " pauses over 180 milliseconds";
+      $("oc-p").textContent = "Measured on this device across " + m.duration_s.toFixed(0)
+        + " seconds, of which you spent " + m.voiced_s.toFixed(0) + " speaking. These are the same "
+        + "timing measures the study computes. The yes-or-no recommendation needs the other 88 "
+        + "voice-quality measures, which do not run in a browser — see what the model does with them below.";
+      $("position").classList.add("hide"); $("sure-wrap").classList.add("hide");
+      $("next-h").textContent = "If you are worried about your memory";
+      $("next-p").textContent = "Talk to your doctor. This is a research prototype and gives no "
+        + "medical advice of any kind.";
+      $("model-meta").textContent = "";
+      $("tl-sub").textContent = "Computed here on your device from a loudness envelope. No audio left this device.";
+    }
+    var src = (r && r.pause) ? r.pause : m, box = $("cells"); box.innerHTML = "";
+    CELLS.forEach(function (f) { var v = src[f[1]]; if (typeof v !== "number") { return; }
+      var d = document.createElement("div"); d.className = "cell"; d.innerHTML = '<div class="k"></div><div class="v"></div><div class="h"></div>';
+      d.children[0].textContent = f[0]; d.children[1].textContent = f[2](v); d.children[2].textContent = f[3]; box.appendChild(d); });
+    $("cells-note").textContent = (r && r.pause) ? "Values as computed by the server on the same audio, so they match what the model saw. Named as in features/pauses.py." : "Computed on this device. Named as in features/pauses.py.";
+    renderCases();
+    scene("s-res");
+    requestAnimationFrame(function () { drawTimeline(); if (r) { placeYou(true); countUp($("cnt-auc"), 62, 1100); countUp($("cnt-pct"), Math.round(r.score * 100), 1100); } });
+  }
+
+  /* ---- real study cases ----
+     Loaded from cases.json beside the page. Produced by export_demo_cases.py
+     from the LOCKED TEST SET: real speakers, real model output, hits and
+     misses in both directions. If the file is absent the section simply never
+     appears -- the page is complete without it and invents nothing. */
+  var CASES = null;
+  function loadCases() {
+    fetch("cases.json", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) { throw new Error("no cases"); } return r.json(); })
+      .then(function (d) {
+        if (!d || !d.cases || !d.cases.length) { throw new Error("empty"); }
+        CASES = d;
+      })
+      .catch(function () { CASES = null; });
+  }
+
+  function renderCases() {
+    var wrap = $("realcases");
+    if (!CASES) { wrap.classList.add("hide"); return; }
+    var d = CASES, co = d.cohort || {}, cut = typeof d.cut === "number" ? d.cut : 0.67;
+
+    $("cases-sub").textContent = "Each row is a real person from the study's locked test set — "
+      + "the recordings the model had never seen. The dot is the model's actual output for that "
+      + "person. Cases it got wrong are included on purpose.";
+
+    var list = $("cases-list");
+    list.innerHTML = "";
+    d.cases.forEach(function (c) {
+      var el = document.createElement("div");
+      el.className = "case";
+      el.innerHTML =
+        '<div class="who"><b></b><span></span></div>' +
+        '<div class="scale"><span class="cut"></span><span class="dot"></span></div>' +
+        '<div class="verdict"><b></b><span></span></div>';
+      el.querySelector(".who b").textContent = c.id;
+      el.querySelector(".who span").textContent =
+        c.group === "dementia" ? "Later diagnosed" : "Control";
+      el.querySelector(".cut").style.left = (cut * 100) + "%";
+      var dot = el.querySelector(".dot");
+      dot.style.left = (Math.min(0.97, Math.max(0.03, c.score)) * 100) + "%";
+      dot.setAttribute("data-t", c.tier);
+      var v = el.querySelector(".verdict b");
+      v.textContent = c.tier === "elevated" ? "Blood test" : "No blood test";
+      v.setAttribute("data-t", c.tier);
+      var s = el.querySelector(".verdict span");
+      s.textContent = c.correct ? "✓ matched" : "✗ missed";
+      s.setAttribute("data-ok", c.correct ? "1" : "0");
+      list.appendChild(el);
+    });
+
+    var note = "";
+    if (co.n_correct && co.n_test_clips) {
+      note = "Across the whole locked test set the recommendation matched the group in "
+        + co.n_correct + " of " + co.n_test_clips + " recordings ("
+        + Math.round((co.accuracy || 0) * 100) + "%). That is a weak signal, honestly reported: "
+        + "AUC 0.617, where 0.500 is a coin flip. It is why this is a filter for a blood test "
+        + "rather than a diagnosis.";
+    }
+    if (d.model && d.model.git_rev) { note += " Model export at commit " + d.model.git_rev + "."; }
+    $("cases-note").textContent = note;
+    wrap.classList.remove("hide");
+  }
+
+  /* ---- pipeline ---- */
+  function analyse(m, blob) {
+    scene("s-ana"); resetSteps(); stepState(0, "run");
+    setTimeout(function () {
+      stepState(0, "ok");
+      if (!API || !blob) { render(m, null); return; }
+      stepState(1, "run");
+      var slow = setTimeout(function () { $("ana-slow").classList.remove("hide"); }, 8000);
+      var fd = new FormData(); fd.append("audio", blob, "clip.wav");
+      var ctl = new AbortController(), kill = setTimeout(function () { ctl.abort(); }, 120000), t0 = Date.now();
+      fetch(API + "/score", { method: "POST", body: fd, signal: ctl.signal })
+        .then(function (res) { stepState(1, "ok"); stepState(2, "run"); if (!res.ok) { throw new Error(String(res.status)); } return res.json(); })
+        .then(function (d) { clearTimeout(kill); clearTimeout(slow);
+          if (!isFinite(Number(d.score)) || !d.tier) { throw new Error("payload"); }
+          stepState(2, "ok"); stepState(3, "run");
+          setTimeout(function () { stepState(3, "ok"); setTimeout(function () { render(m, d); }, reduced ? 0 : 350); }, Math.max(0, 700 - (Date.now() - t0))); })
+        .catch(function () { clearTimeout(kill); clearTimeout(slow); render(m, null); });
+    }, reduced ? 100 : 600);
+  }
+
+  /* ---- recording ---- */
+  function setClock(left) { S.left = left; $("t-left").textContent = left; $("rail").style.width = (((LIMIT - left) / LIMIT) * 100) + "%"; $("stop").disabled = (LIMIT - left) < FLOOR; }
+  function beginRecord() {
+    scene("s-rec"); setClock(LIMIT); S.env = []; S.peak = 0; S.blob = null; S.chunks = []; $("no-mic").classList.add("hide");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { failMic(); return; }
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } })
+      .then(function (stream) {
+        S.stream = stream; var Ctx = window.AudioContext || window.webkitAudioContext; S.ctx = new Ctx(); S.an = S.ctx.createAnalyser();
+        var want = Math.round(S.ctx.sampleRate * WIN_S), size = 2048; while (size < want && size < 32768) { size *= 2; } S.an.fftSize = size;
+        S.ctx.createMediaStreamSource(stream).connect(S.an); sampleLoop();
+        if (API && window.MediaRecorder) { try { S.rec = new MediaRecorder(stream); S.rec.ondataavailable = function (e) { if (e.data && e.data.size) { S.chunks.push(e.data); } }; S.rec.start(); } catch (e) { S.rec = null; } }
+        S.timer = setInterval(function () { setClock(S.left - 1); if (S.left <= 0) { endRecord(); } }, 1000);
+      }).catch(failMic);
+  }
+  function failMic() { $("no-mic").classList.remove("hide"); $("status").textContent = "No microphone"; $("stop").disabled = true; }
+  function sampleLoop() {
+    var buf = new Float32Array(S.an.fftSize), last = 0, lastPaint = 0;
+    function loop(ts) { S.raf = requestAnimationFrame(loop); if (ts - last < HOP * 1000) { return; } last = ts;
+      S.an.getFloatTimeDomainData(buf); var sum = 0; for (var i = 0; i < buf.length; i++) { sum += buf[i] * buf[i]; }
+      var rms = Math.sqrt(sum / buf.length); S.env.push(rms); if (rms > S.peak) { S.peak = rms; }
+      if (ts - lastPaint > 60) { lastPaint = ts; drawScope(); liveCounters(); } }
+    S.raf = requestAnimationFrame(loop);
+  }
+  function stopRecorder() {
+    return new Promise(function (resolve) {
+      if (!S.rec) { resolve(null); return; } var rec = S.rec; S.rec = null;
+      var mk = function () { return S.chunks.length ? new Blob(S.chunks, { type: S.chunks[0].type || "audio/webm" }) : null; };
+      if (rec.state === "inactive") { resolve(mk()); return; }
+      rec.onstop = function () { resolve(mk()); }; try { rec.stop(); } catch (e) { resolve(null); }
+    });
+  }
+  function teardown() {
+    if (S.timer) { clearInterval(S.timer); S.timer = null; } if (S.raf) { cancelAnimationFrame(S.raf); S.raf = null; }
+    if (S.stream) { S.stream.getTracks().forEach(function (t) { t.stop(); }); S.stream = null; } if (S.ctx) { S.ctx.close(); S.ctx = null; S.an = null; }
+  }
+  function endRecord() {
+    var live = S.env.slice();
+    if (S.timer) { clearInterval(S.timer); S.timer = null; }
+    if (S.raf) { cancelAnimationFrame(S.raf); S.raf = null; }
+    stopRecorder().then(function (blob) {
+      teardown(); S.chunks = [];
+      /* No server configured: nothing was ever buffered, so the live envelope
+         from the analyser is all there is -- and all that is needed. */
+      if (!blob) { var m0 = measure(live, HOP); if (m0) { analyse(m0, null); } else { scene("s-start"); } return; }
+      /* Otherwise re-derive the envelope from the decoded audio, so the page's
+         numbers and the server's come from the identical signal. */
+      decodeBlob(blob)
+        .then(function (buf) { return toMono16k(buf); })
+        .then(function (samples) {
+          var m = measure(envelopeOf(samples, TARGET_SR), HOP);
+          if (!m) { scene("s-start"); return; }
+          analyse(m, encodeWav(samples, TARGET_SR));
+        })
+        .catch(function () {
+          var m = measure(live, HOP);
+          if (m) { analyse(m, null); } else { scene("s-start"); }
+        });
+    });
+  }
+
+  /* ---- file route ---- */
+  function fromFile(file) {
+    scene("s-ana"); resetSteps(); stepState(0, "run");
+    decodeBlob(file)
+      .then(function (buf) { return toMono16k(buf); })
+      .then(function (samples) {
+        var m = measure(envelopeOf(samples, TARGET_SR), HOP);
+        if (!m) { scene("s-start"); return; }
+        analyse(m, API ? encodeWav(samples, TARGET_SR) : null);
+      })
+      .catch(function () {
+        scene("s-rec"); $("no-mic").classList.remove("hide");
+        $("no-mic").querySelector("h3").textContent = "That file could not be read";
+        $("no-mic").querySelector("p").textContent = "The browser could not decode it. Try a .wav, .mp3 or .m4a file.";
+      });
+  }
+
+  /* ---- reviewer panel ---- */
+  var lastFocus = null;
+  function openPanel() { lastFocus = document.activeElement; $("scrim").setAttribute("data-open", "1"); $("panel").setAttribute("data-open", "1"); $("panel").focus(); document.body.style.overflow = "hidden"; }
+  function closePanel() { $("scrim").removeAttribute("data-open"); $("panel").removeAttribute("data-open"); document.body.style.overflow = ""; if (lastFocus && lastFocus.focus) { lastFocus.focus(); } }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("panel").getAttribute("data-open")) { closePanel(); } });
+
+  /* ---- consent gating: only when a server is configured ---- */
+  function gate() { var ok = !API || $("consent").checked; $("go-rec").disabled = !ok; $("go-file").disabled = !ok; }
+  if (API) {
+    /* GitHub Pages is https. A browser silently blocks an http:// request from
+       an https:// page, which surfaces here as "the server did not answer" and
+       is very hard to diagnose. Say so loudly in the console instead. */
+    if (location.protocol === "https:" && /^http:\/\//.test(API)) {
+      window.console && console.error(
+        "[Caesura] API_BASE is http:// but this page is served over https://. " +
+        "The browser will block every request as mixed content. Use the https:// " +
+        "URL of the analysis server.");
+    }
+    fetch(API + "/health", { mode: "cors" }).catch(function () {});
+  }
+  else { $("consent-box").classList.add("hide"); $("mic-note").textContent = "No analysis server is configured on this copy, so nothing leaves your device and no recommendation can be given. See HANDOFF.md."; }
+  gate();
+
+  /* ---- wiring ---- */
+  $("consent").addEventListener("change", gate);
+  $("go-rec").addEventListener("click", beginRecord);
+  $("go-file").addEventListener("click", function () { $("file").click(); });
+  $("file").addEventListener("change", function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) { fromFile(f); } });
+  $("stop").addEventListener("click", endRecord);
+  $("cancel").addEventListener("click", function () { teardown(); S.rec = null; S.chunks = []; scene("s-start"); });
+  $("again").addEventListener("click", function () { scene("s-start"); });
+  $("home").addEventListener("click", function (e) { e.preventDefault(); teardown(); S.rec = null; S.chunks = []; scene("s-start"); });
+  $("print").addEventListener("click", function () { window.print(); });
+  $("open-panel").addEventListener("click", openPanel);
+  $("close-panel").addEventListener("click", closePanel);
+  $("scrim").addEventListener("click", closePanel);
+
+  loadCases();
+  startAmbient();
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { if (reduced) { drawConcept(0); } }); }
 })();
 </script>
 </body>
